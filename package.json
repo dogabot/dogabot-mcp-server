@@ -1,0 +1,43 @@
+{
+  "name": "@dogabot/mcp",
+  "version": "0.1.1",
+  "description": "dogabot MCP server - read-only tools for Pro and Institutional API keys",
+  "type": "module",
+  "bin": {
+    "dogabot-mcp": "./bin/dogabot-mcp.mjs"
+  },
+  "files": [
+    "bin",
+    "dist",
+    "assets"
+  ],
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "start": "node dist/index.js",
+    "start:dev": "tsx src/index.ts",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.12.1",
+    "zod": "^3.24.2",
+    "zod-to-json-schema": "^3.24.5"
+  },
+  "devDependencies": {
+    "@types/node": "^22.13.10",
+    "tsx": "^4.19.3",
+    "typescript": "^5.8.2",
+    "vitest": "^3.0.9"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/dogabot/dogabot-mcp-server.git"
+  },
+  "homepage": "https://learn.dogabot.com/help/api-keys-and-mcp",
+  "bugs": {
+    "url": "https://github.com/dogabot/dogabot-mcp-server/issues"
+  }
+}

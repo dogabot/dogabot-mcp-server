@@ -1,0 +1,12 @@
+# Dependencies
+node_modules/
+
+# Build output (npm publish runs `npm run build` in CI)
+dist/
+
+# OS
+.DS_Store
+
+.env
+stdout.txt
+stderr.txt
