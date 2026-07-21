@@ -1,9 +1,11 @@
-import { DogabotClient, automationDetailPath } from './client.js'
+import { DogabotClient, automationDetailPath, automationPositionPath } from './client.js'
 import { zodMcpInputSchema } from './mcp-json-schema.js'
 import {
   getAutomationInput,
   getBacktestInput,
   getCandlesInput,
+  getPnlSeriesInput,
+  getPositionInput,
   getTickerInput,
   listAutomationsInput,
   listBacktestsInput,
@@ -47,6 +49,20 @@ export async function invokeReadTool(ctx: ToolContext, name: ReadToolName, args:
       const input = getAutomationInput.parse(args)
       return client.request('GET', automationDetailPath(input.type, input.id))
     }
+    case 'get_pnl_series': {
+      const input = getPnlSeriesInput.parse(args)
+      return client.request('GET', `${automationDetailPath(input.type, input.id)}/pnl-series`, {
+        query: {
+          period: input.period,
+          limit: input.limit,
+          offset: input.offset,
+        },
+      })
+    }
+    case 'get_position': {
+      const input = getPositionInput.parse(args)
+      return client.request('GET', automationPositionPath(input.type, input.id))
+    }
     case 'get_user_statistics':
       return client.request('GET', '/me/statistics')
     case 'get_positions':
@@ -55,22 +71,17 @@ export async function invokeReadTool(ctx: ToolContext, name: ReadToolName, args:
       const input = listOrdersInput.parse(args ?? {})
       return client.request('GET', '/orders', {
         query: {
+          follower_id: input.follower_id,
+          bot_id: input.bot_id,
           limit: input.limit ?? 50,
           offset: input.offset ?? 0,
-          exchange: input.exchange,
-          symbol: input.symbol,
         },
       })
     }
     case 'list_signals': {
       const input = listSignalsInput.parse(args ?? {})
       return client.request('GET', '/signals', {
-        query: {
-          limit: input.limit ?? 50,
-          offset: input.offset ?? 0,
-          exchange: input.exchange,
-          symbol: input.symbol,
-        },
+        query: { emitter_id: input.emitter_id },
       })
     }
     case 'get_backtest_quota':
@@ -175,7 +186,8 @@ export const toolDefinitions = [
   },
   {
     name: 'get_automation',
-    description: 'Get a single automation by type and id. Read-only.',
+    description:
+      'Get a single automation by type and id (config/params). For daily PnL or open position, use get_pnl_series / get_position. Read-only.',
     inputSchema: {
       type: 'object',
       required: ['type', 'id'],
@@ -184,6 +196,18 @@ export const toolDefinitions = [
         id: { type: 'integer', minimum: 1 },
       },
     },
+  },
+  {
+    name: 'get_pnl_series',
+    description:
+      'Daily PnL series for an automation. Use period=7d|30d|90d|all for windowed sparklines (same as UI Last 30 days); omit period for paginated full series. Companion to get_automation / get_backtest for live-vs-sim compares. Read-only.',
+    inputSchema: zodMcpInputSchema(getPnlSeriesInput),
+  },
+  {
+    name: 'get_position',
+    description:
+      'Open position for one automation (quantity, side, avg entry). Portfolios return aggregated positions. Companion to get_automation for live-vs-sim compares. Read-only.',
+    inputSchema: zodMcpInputSchema(getPositionInput),
   },
   {
     name: 'get_user_statistics',
@@ -197,29 +221,14 @@ export const toolDefinitions = [
   },
   {
     name: 'list_orders',
-    description: 'Paginated order history. Read-only.',
-    inputSchema: {
-      type: 'object',
-      properties: {
-        limit: { type: 'integer' },
-        offset: { type: 'integer' },
-        exchange: { type: 'string' },
-        symbol: { type: 'string' },
-      },
-    },
+    description:
+      'Paginated order history for a follower or bot. Requires exactly one of follower_id or bot_id. Read-only.',
+    inputSchema: zodMcpInputSchema(listOrdersInput),
   },
   {
     name: 'list_signals',
-    description: 'Paginated signal history. Read-only.',
-    inputSchema: {
-      type: 'object',
-      properties: {
-        limit: { type: 'integer' },
-        offset: { type: 'integer' },
-        exchange: { type: 'string' },
-        symbol: { type: 'string' },
-      },
-    },
+    description: 'Latest signals for an emitter (requires emitter_id). Read-only.',
+    inputSchema: zodMcpInputSchema(listSignalsInput),
   },
   {
     name: 'get_backtest_quota',
@@ -234,7 +243,8 @@ export const toolDefinitions = [
   },
   {
     name: 'get_backtest',
-    description: 'Get a backtest job by id. Read-only.',
+    description:
+      'Get a backtest job by id (includes pnl_series and statistics). Compare live automations with get_pnl_series / get_position. Read-only.',
     inputSchema: {
       type: 'object',
       required: ['job_id'],

@@ -71,3 +71,9 @@ export function automationDetailPath(type: string, id: number): string {
   const plural = type === 'portfolio' ? 'portfolios' : `${type}s`
   return `/${plural}/${id}`
 }
+
+/** Position endpoint: portfolios use plural `/positions`; other types use `/position`. */
+export function automationPositionPath(type: string, id: number): string {
+  const base = automationDetailPath(type, id)
+  return type === 'portfolio' ? `${base}/positions` : `${base}/position`
+}

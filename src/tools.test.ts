@@ -127,3 +127,66 @@ describe('invokeReadTool list_automations', () => {
     })
   })
 })
+
+describe('invokeReadTool get_pnl_series', () => {
+  it('calls automation pnl-series with period', async () => {
+    const request = vi.fn().mockResolvedValue({ items: [] })
+    const client = { request } as unknown as DogabotClient
+
+    await invokeReadTool({ ...ctx, client }, 'get_pnl_series', {
+      type: 'emitter',
+      id: 13720,
+      period: '30d',
+    })
+
+    expect(request).toHaveBeenCalledWith('GET', '/emitters/13720/pnl-series', {
+      query: { period: '30d', limit: undefined, offset: undefined },
+    })
+  })
+})
+
+describe('invokeReadTool get_position', () => {
+  it('uses singular position path for emitters', async () => {
+    const request = vi.fn().mockResolvedValue({ quantity: 1 })
+    const client = { request } as unknown as DogabotClient
+
+    await invokeReadTool({ ...ctx, client }, 'get_position', { type: 'emitter', id: 13720 })
+
+    expect(request).toHaveBeenCalledWith('GET', '/emitters/13720/position')
+  })
+
+  it('uses plural positions path for portfolios', async () => {
+    const request = vi.fn().mockResolvedValue({ items: [] })
+    const client = { request } as unknown as DogabotClient
+
+    await invokeReadTool({ ...ctx, client }, 'get_position', { type: 'portfolio', id: 3 })
+
+    expect(request).toHaveBeenCalledWith('GET', '/portfolios/3/positions')
+  })
+})
+
+describe('invokeReadTool list_signals', () => {
+  it('requires emitter_id', async () => {
+    const request = vi.fn().mockResolvedValue({ items: [] })
+    const client = { request } as unknown as DogabotClient
+
+    await invokeReadTool({ ...ctx, client }, 'list_signals', { emitter_id: 13720 })
+
+    expect(request).toHaveBeenCalledWith('GET', '/signals', {
+      query: { emitter_id: 13720 },
+    })
+  })
+})
+
+describe('invokeReadTool list_orders', () => {
+  it('passes follower_id', async () => {
+    const request = vi.fn().mockResolvedValue({ items: [] })
+    const client = { request } as unknown as DogabotClient
+
+    await invokeReadTool({ ...ctx, client }, 'list_orders', { follower_id: 9, limit: 10 })
+
+    expect(request).toHaveBeenCalledWith('GET', '/orders', {
+      query: { follower_id: 9, bot_id: undefined, limit: 10, offset: 0 },
+    })
+  })
+})

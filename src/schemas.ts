@@ -21,18 +21,44 @@ export const listAutomationsInput = z.object({
 })
 
 export const getAutomationInput = z.object({
-  type: z.enum(['follower', 'bot', 'emitter', 'portfolio']),
+  type: automationTypeSchema,
   id: z.number().int().positive(),
 })
 
-export const listOrdersInput = z.object({
-  limit: z.number().int().min(1).max(100).optional(),
+export const getPnlSeriesInput = z.object({
+  type: automationTypeSchema,
+  id: z.number().int().positive(),
+  period: z.enum(['7d', '30d', '90d', 'all']).optional(),
+  limit: z.number().int().min(1).max(2000).optional(),
   offset: z.number().int().min(0).optional(),
-  exchange: z.string().optional(),
-  symbol: z.string().optional(),
 })
 
-export const listSignalsInput = listOrdersInput
+export const getPositionInput = z.object({
+  type: automationTypeSchema,
+  id: z.number().int().positive(),
+})
+
+export const listOrdersInput = z
+  .object({
+    follower_id: z.number().int().positive().optional(),
+    bot_id: z.number().int().positive().optional(),
+    limit: z.number().int().min(1).max(100).optional(),
+    offset: z.number().int().min(0).optional(),
+  })
+  .superRefine((val, ctx) => {
+    const hasFollower = val.follower_id != null
+    const hasBot = val.bot_id != null
+    if (hasFollower === hasBot) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: 'Provide exactly one of follower_id or bot_id',
+      })
+    }
+  })
+
+export const listSignalsInput = z.object({
+  emitter_id: z.number().int().positive(),
+})
 
 const backtestSortBySchema = z.enum([
   'created_at',
@@ -98,6 +124,8 @@ export type ReadToolName =
   | 'get_me'
   | 'list_automations'
   | 'get_automation'
+  | 'get_pnl_series'
+  | 'get_position'
   | 'get_user_statistics'
   | 'get_positions'
   | 'list_orders'
@@ -114,6 +142,8 @@ export const READ_TOOLS: ReadToolName[] = [
   'get_me',
   'list_automations',
   'get_automation',
+  'get_pnl_series',
+  'get_position',
   'get_user_statistics',
   'get_positions',
   'list_orders',
@@ -132,6 +162,8 @@ export const toolRouteMap: Record<ReadToolName, { method: string; path: string; 
   get_me: { method: 'GET', path: '/me' },
   list_automations: { method: 'POST', path: '/automations/summary' },
   get_automation: { method: 'GET', path: '/:type/:id', note: 'resolved at runtime' },
+  get_pnl_series: { method: 'GET', path: '/:type/:id/pnl-series', note: 'resolved at runtime' },
+  get_position: { method: 'GET', path: '/:type/:id/position', note: 'resolved at runtime; portfolios use /positions' },
   get_user_statistics: { method: 'GET', path: '/me/statistics' },
   get_positions: { method: 'GET', path: '/me/positions' },
   list_orders: { method: 'GET', path: '/orders' },

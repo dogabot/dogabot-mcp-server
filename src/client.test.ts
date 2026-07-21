@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import { automationDetailPath, DogabotClient } from './client.js'
+import { automationDetailPath, automationPositionPath, DogabotClient } from './client.js'
 
 describe('DogabotClient', () => {
   afterEach(() => {
@@ -101,5 +101,16 @@ describe('automationDetailPath', () => {
 
   it('maps bot to bots', () => {
     expect(automationDetailPath('bot', 7)).toBe('/bots/7')
+  })
+})
+
+describe('automationPositionPath', () => {
+  it('uses singular position for bot and emitter', () => {
+    expect(automationPositionPath('bot', 7)).toBe('/bots/7/position')
+    expect(automationPositionPath('emitter', 13720)).toBe('/emitters/13720/position')
+  })
+
+  it('uses plural positions for portfolio', () => {
+    expect(automationPositionPath('portfolio', 3)).toBe('/portfolios/3/positions')
   })
 })
