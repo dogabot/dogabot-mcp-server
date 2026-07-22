@@ -8,19 +8,46 @@ MCP (Model Context Protocol) server for [dogabot](https://dogabot.com). Exposes 
 - API key from **Settings → API Keys** (`dbk_live_...`)
 - Node.js 20+
 
-## Install (underlying server)
+## Setup
 
-All setup paths run the same npm package:
+`npx -y @dogabot/mcp` is the **server command** your AI client runs — not a manual install step. If you run it alone in a terminal without `DOGABOT_API_KEY`, it exits with `DOGABOT_API_KEY is required` because that command starts the MCP server process.
+
+Correct order:
+
+1. Create an API key in dogabot (**Settings → API Keys**).
+2. Add the MCP config for your client (sections below) so `DOGABOT_API_KEY` is set when the client launches the server.
+3. Reload or restart the client.
+
+### Optional: global install
+
+Most users should stick to `npx` (no local install). If you prefer a fixed binary on your PATH:
 
 ```bash
-npx -y @dogabot/mcp
+npm install -g @dogabot/mcp
 ```
 
-Or install globally: `npm install -g @dogabot/mcp` and use `"command": "dogabot-mcp"`.
+Then point the client at `dogabot-mcp` instead of `npx`:
+
+```json
+{
+  "mcpServers": {
+    "dogabot": {
+      "command": "dogabot-mcp",
+      "env": {
+        "DOGABOT_API_KEY": "${env:DOGABOT_API_KEY}"
+      }
+    }
+  }
+}
+```
+
+Same rule: `DOGABOT_API_KEY` must be set in the client config (or your environment). Running `dogabot-mcp` alone in a terminal still starts the server and fails without the key.
 
 ## Cursor (recommended)
 
-Copy [`examples/cursor-mcp.json`](examples/cursor-mcp.json) into `.cursor/mcp.json` (merge with existing `mcpServers` if needed). Set `DOGABOT_API_KEY` in your environment, then reload Cursor.
+1. Copy [`examples/cursor-mcp.json`](examples/cursor-mcp.json) into `.cursor/mcp.json` (merge with existing `mcpServers` if needed). That file uses `"command": "npx"` with `"args": ["-y", "@dogabot/mcp"]`.
+2. Export `DOGABOT_API_KEY` in your environment (the example uses `${env:DOGABOT_API_KEY}`), or put the key value in the `env` block.
+3. Reload Cursor and enable the **dogabot** server under Settings → Tools & MCP.
 
 ## Claude Desktop
 
