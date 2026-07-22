@@ -1,10 +1,10 @@
 {
   "name": "@dogabot/mcp",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "dogabot MCP server - read-only tools for Pro and Institutional API keys",
   "type": "module",
   "bin": {
-    "dogabot-mcp": "./bin/dogabot-mcp.mjs"
+    "dogabot-mcp": "bin/dogabot-mcp.mjs"
   },
   "files": [
     "bin",
@@ -31,6 +31,9 @@
   },
   "engines": {
     "node": ">=20"
+  },
+  "publishConfig": {
+    "access": "public"
   },
   "repository": {
     "type": "git",

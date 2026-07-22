@@ -2,7 +2,7 @@
   "name": "dogabot",
   "displayName": "dogabot",
   "description": "dogabot MCP server — read-only trading tools for Pro and Institutional API keys",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "author": {
     "name": "dogabot",
     "url": "https://dogabot.com"
