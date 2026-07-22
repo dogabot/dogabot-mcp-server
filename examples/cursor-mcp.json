@@ -4,7 +4,7 @@
       "command": "npx",
       "args": ["-y", "@dogabot/mcp"],
       "env": {
-        "DOGABOT_API_KEY": "${env:DOGABOT_API_KEY}"
+        "DOGABOT_API_KEY": "dbk_live_REPLACE_ME"
       }
     }
   }

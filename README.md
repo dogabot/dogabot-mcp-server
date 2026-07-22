@@ -6,48 +6,43 @@ MCP (Model Context Protocol) server for [dogabot](https://dogabot.com). Exposes 
 
 - **Pro or Institutional** dogabot account
 - API key from **Settings → API Keys** (`dbk_live_...`)
-- Node.js 20+
+- Node.js 20+ (Cursor/Claude will use it when they launch the server)
 
-## Setup
+## Setup (no terminal install)
 
-`npx -y @dogabot/mcp` is the **server command** your AI client runs — not a manual install step. If you run it alone in a terminal without `DOGABOT_API_KEY`, it exits with `DOGABOT_API_KEY is required` because that command starts the MCP server process.
-
-Correct order:
+There is **no** `npm install` or `npx` step for you to run by hand.
 
 1. Create an API key in dogabot (**Settings → API Keys**).
-2. Add the MCP config for your client (sections below) so `DOGABOT_API_KEY` is set when the client launches the server.
-3. Reload or restart the client.
+2. Copy the client config below into your AI app’s MCP settings file.
+3. Put your key in the config (replace the placeholder).
+4. Enable the **dogabot** server in the app UI (Cursor: Settings → Tools & MCP).
 
-### Optional: global install
+**Do not run `npx -y @dogabot/mcp` (or `dogabot-mcp`) in a terminal.** That command is what the AI app executes for you. Running it alone always fails with `DOGABOT_API_KEY is required` unless you also exported the key in that shell — and even then it only sits waiting for MCP protocol traffic. Use the UI toggle instead.
 
-Most users should stick to `npx` (no local install). If you prefer a fixed binary on your PATH:
+## Cursor (recommended)
 
-```bash
-npm install -g @dogabot/mcp
-```
+1. Copy [`examples/cursor-mcp.json`](examples/cursor-mcp.json) into `.cursor/mcp.json` (merge with existing `mcpServers` if needed).
+2. Replace `dbk_live_REPLACE_ME` with your API key (or set `DOGABOT_API_KEY` in your OS environment and use `"${env:DOGABOT_API_KEY}"` instead of the literal key).
+3. Reload Cursor.
+4. Open **Settings → Tools & MCP** and enable **dogabot**.
 
-Then point the client at `dogabot-mcp` instead of `npx`:
+Example (after replacing the key):
 
 ```json
 {
   "mcpServers": {
     "dogabot": {
-      "command": "dogabot-mcp",
+      "command": "npx",
+      "args": ["-y", "@dogabot/mcp"],
       "env": {
-        "DOGABOT_API_KEY": "${env:DOGABOT_API_KEY}"
+        "DOGABOT_API_KEY": "dbk_live_REPLACE_ME"
       }
     }
   }
 }
 ```
 
-Same rule: `DOGABOT_API_KEY` must be set in the client config (or your environment). Running `dogabot-mcp` alone in a terminal still starts the server and fails without the key.
-
-## Cursor (recommended)
-
-1. Copy [`examples/cursor-mcp.json`](examples/cursor-mcp.json) into `.cursor/mcp.json` (merge with existing `mcpServers` if needed). That file uses `"command": "npx"` with `"args": ["-y", "@dogabot/mcp"]`.
-2. Export `DOGABOT_API_KEY` in your environment (the example uses `${env:DOGABOT_API_KEY}`), or put the key value in the `env` block.
-3. Reload Cursor and enable the **dogabot** server under Settings → Tools & MCP.
+Cursor downloads and starts `@dogabot/mcp` automatically when the server is enabled. You only toggle it on/off in the UI.
 
 ## Claude Desktop
 
@@ -67,6 +62,8 @@ claude mcp add dogabot \
   --env DOGABOT_API_KEY=dbk_live_YOUR_KEY_HERE \
   -- npx -y @dogabot/mcp
 ```
+
+That registers the server with Claude Code (it launches `npx` for you). You still should not run `npx -y @dogabot/mcp` yourself to “test install”.
 
 ## Environment variables
 
@@ -105,7 +102,7 @@ Every request requires a valid **scoped API key** — there is no anonymous acce
 - **Scoped keys** — each key is limited to explicit read permissions (account, automations, orders, markets, etc.).
 - **No exchange credentials** — API keys cannot access exchange API secrets; connect exchanges only in the webapp.
 - **Use a dedicated key** — create a separate key for MCP (e.g. “Cursor MCP”) and revoke it when you stop using it.
-- **Never commit keys** — keep `DOGABOT_API_KEY` in environment variables or a secret manager, not in git or shared config files.
+- **Never commit keys** — keep `DOGABOT_API_KEY` out of git; prefer OS env / secret manager, or a private local `.cursor/mcp.json` that is not committed.
 
 Institutional write access is via the REST API only (with `Idempotency-Key`), not through MCP in v1. See the [Learn Center](https://learn.dogabot.com/help/api-keys-and-mcp) for key creation and best practices.
 
