@@ -74,7 +74,7 @@ Only `DOGABOT_API_KEY` is required. The server uses the production dogabot REST 
 | Tool | Description |
 |------|-------------|
 | `get_me` | Current user profile |
-| `list_automations` | Automations summary (sort/filter) |
+| `list_automations` | Automations summary (sort/filter; optional `enabled_rule`) |
 | `get_automation` | Single automation detail (config) |
 | `get_pnl_series` | Daily PnL series (`period` 7d/30d/90d/all) |
 | `get_position` | Open position for one automation |
@@ -83,7 +83,7 @@ Only `DOGABOT_API_KEY` is required. The server uses the production dogabot REST 
 | `list_orders` | Order history (`follower_id` or `bot_id`) |
 | `list_signals` | Emitter signal history (`emitter_id`) |
 | `get_backtest_quota` | Backtest quota |
-| `list_backtests` | Backtest results (sort/filter) |
+| `list_backtests` | Backtest results (sort/filter; optional `enabled_rule`) |
 | `get_backtest` | Single backtest detail |
 | `search_marketplace` | Marketplace search |
 | `list_markets` | Markets list |

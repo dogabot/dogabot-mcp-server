@@ -46,9 +46,11 @@ describe('read tool manifest', () => {
       sort_by: 'pnl',
       sort_dir: 'asc',
       types: ['bot'],
+      enabled_rule: 'pricePredict',
     })
     expect(parsed.sort_by).toBe('pnl')
     expect(parsed.types).toEqual(['bot'])
+    expect(parsed.enabled_rule).toBe('pricePredict')
   })
 
   it('advertises list_backtests metric filters in MCP tool schema', () => {
@@ -57,6 +59,7 @@ describe('read tool manifest', () => {
     const props = (tool!.inputSchema as { properties?: Record<string, unknown> }).properties
     expect(props).toHaveProperty('min_pnl')
     expect(props).toHaveProperty('sort_by_2')
+    expect(props).toHaveProperty('enabled_rule')
   })
 
   it('accepts get_pnl_series input with period', () => {

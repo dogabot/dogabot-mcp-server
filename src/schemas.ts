@@ -17,6 +17,10 @@ export const listAutomationsInput = z.object({
   category: z.string().optional(),
   name_query: z.string().optional(),
   day_trade_mode: z.boolean().optional(),
+  enabled_rule: z
+    .string()
+    .optional()
+    .describe('Filter to automations with this strategy rule enabled (e.g. pricePredict, rsi)'),
   types: z.array(automationTypeSchema).optional(),
 })
 
@@ -84,6 +88,10 @@ export const listBacktestsInput = z.object({
   name_query: z.string().optional(),
   batch_id: z.string().optional(),
   day_trade_mode: z.boolean().optional(),
+  enabled_rule: z
+    .string()
+    .optional()
+    .describe('Filter to backtests with this strategy rule enabled (e.g. pricePredict, rsi)'),
   min_pnl: z.number().optional().describe('Minimum final PnL in quote currency (e.g. 1000)'),
   max_pnl: z.number().optional().describe('Maximum final PnL in quote currency'),
   min_roi: z.number().optional().describe('Minimum ROI after costs as decimal (0.5 = 50%)'),

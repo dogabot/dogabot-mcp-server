@@ -41,6 +41,7 @@ export async function invokeReadTool(ctx: ToolContext, name: ReadToolName, args:
           category: input.category,
           nameQuery: input.name_query,
           day_trade_mode: input.day_trade_mode,
+          enabled_rule: input.enabled_rule,
           types: input.types,
         },
       })
@@ -102,6 +103,7 @@ export async function invokeReadTool(ctx: ToolContext, name: ReadToolName, args:
           nameQuery: input.name_query,
           batch_id: input.batch_id,
           day_trade_mode: input.day_trade_mode ? 'true' : undefined,
+          enabled_rule: input.enabled_rule,
           minPnl: input.min_pnl,
           maxPnl: input.max_pnl,
           minRoi: input.min_roi,
@@ -160,7 +162,7 @@ export const toolDefinitions = [
   {
     name: 'list_automations',
     description:
-      'List automation summaries (bots, followers, emitters, portfolios). Read-only. Default sort is PnL descending; pass sort_by=pnl and sort_dir to override.',
+      'List automation summaries (bots, followers, emitters, portfolios). Read-only. Default sort is PnL descending; pass sort_by=pnl and sort_dir to override. Optional enabled_rule filters to strategies with that rule enabled (e.g. pricePredict); list rows may include enabled_rules.',
     inputSchema: {
       type: 'object',
       properties: {
@@ -176,6 +178,10 @@ export const toolDefinitions = [
         category: { type: 'string' },
         name_query: { type: 'string', description: 'Filter by name substring' },
         day_trade_mode: { type: 'boolean' },
+        enabled_rule: {
+          type: 'string',
+          description: 'Filter to automations with this strategy rule enabled (e.g. pricePredict, rsi)',
+        },
         types: {
           type: 'array',
           items: { type: 'string', enum: ['follower', 'bot', 'emitter', 'portfolio'] },
@@ -238,7 +244,7 @@ export const toolDefinitions = [
   {
     name: 'list_backtests',
     description:
-      'List backtest jobs. Read-only. Combine sort_by, status, and metric filters (min_pnl, max_pnl, min_sharpe, min_roi, etc.). Example: completed backtests with pnl >= 1000 sorted by sharpe desc. ROI filters use decimal (1.0 = 100%). When sorting/filtering result metrics, set status=completed.',
+      'List backtest jobs. Read-only. Combine sort_by, status, enabled_rule, and metric filters (min_pnl, max_pnl, min_sharpe, min_roi, etc.). Example: completed backtests with enabled_rule=pricePredict sorted by sharpe desc. ROI filters use decimal (1.0 = 100%). When sorting/filtering result metrics, set status=completed. List rows may include enabled_rules.',
     inputSchema: zodMcpInputSchema(listBacktestsInput),
   },
   {

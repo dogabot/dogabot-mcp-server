@@ -66,6 +66,7 @@ describe('invokeReadTool list_backtests', () => {
       day_trade_mode: true,
       min_pnl: 1000,
       min_sharpe: 2,
+      enabled_rule: 'pricePredict',
     })
 
     expect(request).toHaveBeenCalledWith('GET', '/backtests', {
@@ -82,6 +83,7 @@ describe('invokeReadTool list_backtests', () => {
         nameQuery: 'grid',
         batch_id: 'batch-abc',
         day_trade_mode: 'true',
+        enabled_rule: 'pricePredict',
         minPnl: 1000,
         maxPnl: undefined,
         minRoi: undefined,
@@ -105,6 +107,7 @@ describe('invokeReadTool list_automations', () => {
       sort_dir: 'asc',
       status: 'running',
       trading_mode: 'live',
+      enabled_rule: 'rsi',
       types: ['follower', 'emitter'],
     })
 
@@ -122,6 +125,7 @@ describe('invokeReadTool list_automations', () => {
         category: undefined,
         nameQuery: undefined,
         day_trade_mode: undefined,
+        enabled_rule: 'rsi',
         types: ['follower', 'emitter'],
       },
     })
