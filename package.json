@@ -1,6 +1,6 @@
 {
   "name": "@dogabot/mcp",
-  "version": "0.1.4",
+  "version": "0.1.5",
   "description": "dogabot MCP server - read-only tools for Pro and Institutional API keys",
   "type": "module",
   "bin": {

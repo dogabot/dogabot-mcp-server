@@ -44,6 +44,11 @@ Example (after replacing the key):
 
 Cursor downloads and starts `@dogabot/mcp` automatically when the server is enabled. You only toggle it on/off in the UI.
 
+### Troubleshooting (Cursor)
+
+- **Tools show up but every call times out** — Cursor sometimes keeps a stale “connected” session after sleep or a long day. Open **Settings → Tools & MCP**, turn **dogabot** off, wait a few seconds, turn it on again (or use **Developer: Reload Window**).
+- **`DOGABOT_API_KEY is required` in the MCP log** — the key is missing from the `env` block (or `envFile`). Fix the config and toggle the server again.
+
 ## Claude Desktop
 
 Claude Desktop requires **strict JSON** (no comments, no `${env:…}` interpolation).
