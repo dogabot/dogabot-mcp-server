@@ -28,7 +28,11 @@ export class DogabotClient {
   async request<T = unknown>(
     method: string,
     path: string,
-    options?: { query?: Record<string, string | number | undefined>; body?: unknown },
+    options?: {
+      query?: Record<string, string | number | undefined>
+      body?: unknown
+      headers?: Record<string, string>
+    },
   ): Promise<T> {
     const url = new URL(`${this.baseUrl}${path.startsWith('/') ? path : `/${path}`}`)
     if (options?.query) {
@@ -43,6 +47,7 @@ export class DogabotClient {
         Authorization: `Bearer ${this.apiKey}`,
         Accept: 'application/json',
         ...(options?.body ? { 'Content-Type': 'application/json' } : {}),
+        ...(options?.headers ?? {}),
       },
       body: options?.body ? JSON.stringify(options.body) : undefined,
     })

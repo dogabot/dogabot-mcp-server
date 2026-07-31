@@ -128,6 +128,26 @@ export const getCandlesInput = z.object({
   countback: z.number().int().min(1).max(2000).optional(),
 })
 
+export const listTerminalOrdersInput = z.object({
+  limit: z.number().int().min(1).max(100).optional(),
+  offset: z.number().int().min(0).optional(),
+  exchange: z.string().optional(),
+  symbol: z.string().optional(),
+  trading_mode: z.string().optional(),
+})
+
+export const placeTerminalOrderInput = z.object({
+  exchange: z.string().min(1),
+  symbol: z.string().min(1),
+  side: z.enum(['buy', 'sell']),
+  quantity: z.number().positive(),
+  price: z.number().min(0).optional().default(0),
+  trading_mode: z.enum(['live', 'paper']).default('paper'),
+  broadcast_mode: z.enum(['personal', 'leader']).default('personal'),
+  emitter_id: z.number().int().positive().optional(),
+  idempotency_key: z.string().min(1).optional(),
+})
+
 export type ReadToolName =
   | 'get_me'
   | 'list_automations'
@@ -145,6 +165,11 @@ export type ReadToolName =
   | 'list_markets'
   | 'get_ticker'
   | 'get_candles'
+  | 'list_terminal_orders'
+
+export type WriteToolName = 'place_terminal_order'
+
+export type ToolName = ReadToolName | WriteToolName
 
 export const READ_TOOLS: ReadToolName[] = [
   'get_me',
@@ -163,10 +188,13 @@ export const READ_TOOLS: ReadToolName[] = [
   'list_markets',
   'get_ticker',
   'get_candles',
+  'list_terminal_orders',
 ]
 
-/** Maps MCP tool names to REST endpoints (read-only v1). */
-export const toolRouteMap: Record<ReadToolName, { method: string; path: string; note?: string }> = {
+export const WRITE_TOOLS: WriteToolName[] = ['place_terminal_order']
+
+/** Maps MCP tool names to REST endpoints. */
+export const toolRouteMap: Record<ToolName, { method: string; path: string; note?: string }> = {
   get_me: { method: 'GET', path: '/me' },
   list_automations: { method: 'POST', path: '/automations/summary' },
   get_automation: { method: 'GET', path: '/:type/:id', note: 'resolved at runtime' },
@@ -183,4 +211,6 @@ export const toolRouteMap: Record<ReadToolName, { method: string; path: string; 
   list_markets: { method: 'GET', path: '/markets' },
   get_ticker: { method: 'GET', path: '/ticker' },
   get_candles: { method: 'GET', path: '/datafeed/history' },
+  list_terminal_orders: { method: 'GET', path: '/terminal/orders' },
+  place_terminal_order: { method: 'POST', path: '/terminal/place-order', note: 'requires write:terminal + Idempotency-Key' },
 }

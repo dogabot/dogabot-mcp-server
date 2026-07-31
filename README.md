@@ -109,7 +109,7 @@ Every request requires a valid **scoped API key** — there is no anonymous acce
 - **Use a dedicated key** — create a separate key for MCP (e.g. “Cursor MCP”) and revoke it when you stop using it.
 - **Never commit keys** — keep `DOGABOT_API_KEY` out of git; prefer OS env / secret manager, or a private local `.cursor/mcp.json` that is not committed.
 
-Institutional write access is via the REST API only (with `Idempotency-Key`), not through MCP in v1. See the [Learn Center](https://learn.dogabot.com/help/api-keys-and-mcp) for key creation and best practices.
+Institutional write access for automation lifecycle is via the REST API only (with `Idempotency-Key`). MCP includes **`place_terminal_order`** / **`list_terminal_orders`** for personal terminal trading (requires `write:terminal` / `read:orders` on the API key).
 
 ## Related
 

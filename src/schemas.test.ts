@@ -7,6 +7,7 @@ import {
   listOrdersInput,
   listSignalsInput,
   READ_TOOLS,
+  WRITE_TOOLS,
   toolRouteMap,
 } from './schemas.js'
 import { toolDefinitions } from './tools.js'
@@ -19,8 +20,15 @@ describe('read tool manifest', () => {
     }
   })
 
+  it('maps every write tool to a REST route', () => {
+    for (const tool of WRITE_TOOLS) {
+      expect(toolRouteMap[tool]).toBeDefined()
+      expect(toolRouteMap[tool].method).toMatch(/POST/)
+    }
+  })
+
   it('registers the same tools in the MCP manifest', () => {
-    expect(toolDefinitions.map((t) => t.name).sort()).toEqual([...READ_TOOLS].sort())
+    expect(toolDefinitions.map((t) => t.name).sort()).toEqual([...READ_TOOLS, ...WRITE_TOOLS].sort())
   })
 
   it('accepts list_backtests sort params', () => {

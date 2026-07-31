@@ -12,8 +12,11 @@ import {
   listMarketsInput,
   listOrdersInput,
   listSignalsInput,
+  listTerminalOrdersInput,
+  placeTerminalOrderInput,
   searchMarketplaceInput,
   type ReadToolName,
+  type WriteToolName,
 } from './schemas.js'
 
 export type ToolContext = {
@@ -148,8 +151,47 @@ export async function invokeReadTool(ctx: ToolContext, name: ReadToolName, args:
         },
       })
     }
+    case 'list_terminal_orders': {
+      const input = listTerminalOrdersInput.parse(args ?? {})
+      return client.request('GET', '/terminal/orders', {
+        query: {
+          limit: input.limit ?? 50,
+          offset: input.offset ?? 0,
+          exchange: input.exchange,
+          symbol: input.symbol,
+          trading_mode: input.trading_mode,
+        },
+      })
+    }
     default:
       throw new Error(`Unknown tool: ${name satisfies never}`)
+  }
+}
+
+export async function invokeWriteTool(ctx: ToolContext, name: WriteToolName, args: unknown): Promise<unknown> {
+  const { client } = ctx
+  switch (name) {
+    case 'place_terminal_order': {
+      const input = placeTerminalOrderInput.parse(args)
+      const idempotencyKey =
+        input.idempotency_key?.trim() ||
+        `mcp-term-${Date.now()}-${Math.random().toString(36).slice(2, 10)}`
+      return client.request('POST', '/terminal/place-order', {
+        headers: { 'Idempotency-Key': idempotencyKey },
+        body: {
+          exchange: input.exchange,
+          symbol: input.symbol,
+          side: input.side,
+          quantity: input.quantity,
+          price: input.price ?? 0,
+          trading_mode: input.trading_mode,
+          broadcast_mode: input.broadcast_mode,
+          emitter_id: input.emitter_id,
+        },
+      })
+    }
+    default:
+      throw new Error(`Unknown write tool: ${name satisfies never}`)
   }
 }
 
@@ -307,5 +349,17 @@ export const toolDefinitions = [
         countback: { type: 'integer', minimum: 1, maximum: 2000, description: 'Max bars (default 100)' },
       },
     },
+  },
+  {
+    name: 'list_terminal_orders',
+    description:
+      'List personal terminal order history for the authenticated user (terminal.orders). Optional exchange/symbol/trading_mode filters. Requires read:orders.',
+    inputSchema: zodMcpInputSchema(listTerminalOrdersInput),
+  },
+  {
+    name: 'place_terminal_order',
+    description:
+      'Place a personal terminal market order (paper or live). Orders persist under terminal schema, not automations. Requires write:terminal API key scope, feat:terminal, and sends Idempotency-Key automatically (or pass idempotency_key). Prefer paper for testing.',
+    inputSchema: zodMcpInputSchema(placeTerminalOrderInput),
   },
 ] as const
