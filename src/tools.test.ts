@@ -194,3 +194,19 @@ describe('invokeReadTool list_orders', () => {
     })
   })
 })
+
+describe('invokeReadTool get_terminal_order', () => {
+  it('encodes client_order_id in path', async () => {
+    const request = vi.fn().mockResolvedValue({ status: 'FILLED' })
+    const client = { request } as unknown as DogabotClient
+
+    await invokeReadTool({ ...ctx, client }, 'get_terminal_order', {
+      client_order_id: 'dogabot-tabc/def',
+    })
+
+    expect(request).toHaveBeenCalledWith(
+      'GET',
+      '/terminal/orders/by-client-order-id/dogabot-tabc%2Fdef',
+    )
+  })
+})

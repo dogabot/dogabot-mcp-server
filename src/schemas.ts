@@ -134,6 +134,11 @@ export const listTerminalOrdersInput = z.object({
   exchange: z.string().optional(),
   symbol: z.string().optional(),
   trading_mode: z.string().optional(),
+  client_order_id: z.string().optional(),
+})
+
+export const getTerminalOrderInput = z.object({
+  client_order_id: z.string().min(1),
 })
 
 export const placeTerminalOrderInput = z.object({
@@ -166,6 +171,7 @@ export type ReadToolName =
   | 'get_ticker'
   | 'get_candles'
   | 'list_terminal_orders'
+  | 'get_terminal_order'
 
 export type WriteToolName = 'place_terminal_order'
 
@@ -189,6 +195,7 @@ export const READ_TOOLS: ReadToolName[] = [
   'get_ticker',
   'get_candles',
   'list_terminal_orders',
+  'get_terminal_order',
 ]
 
 export const WRITE_TOOLS: WriteToolName[] = ['place_terminal_order']
@@ -212,5 +219,10 @@ export const toolRouteMap: Record<ToolName, { method: string; path: string; note
   get_ticker: { method: 'GET', path: '/ticker' },
   get_candles: { method: 'GET', path: '/datafeed/history' },
   list_terminal_orders: { method: 'GET', path: '/terminal/orders' },
-  place_terminal_order: { method: 'POST', path: '/terminal/place-order', note: 'requires write:terminal + Idempotency-Key' },
+  get_terminal_order: {
+    method: 'GET',
+    path: '/terminal/orders/by-client-order-id/:client_order_id',
+    note: 'poll after place_terminal_order until 200 or timeout',
+  },
+  place_terminal_order: { method: 'POST', path: '/terminal/place-order', note: 'requires write:terminal + Idempotency-Key; returns accepted + client_order_id' },
 }

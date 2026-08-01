@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest'
 import {
   getPnlSeriesInput,
   getPositionInput,
+  getTerminalOrderInput,
   listAutomationsInput,
   listBacktestsInput,
   listOrdersInput,
@@ -90,5 +91,12 @@ describe('read tool manifest', () => {
     expect(() => listOrdersInput.parse({ follower_id: 1, bot_id: 2 })).toThrow(/follower_id or bot_id/)
     expect(listOrdersInput.parse({ follower_id: 9 }).follower_id).toBe(9)
     expect(listOrdersInput.parse({ bot_id: 3 }).bot_id).toBe(3)
+  })
+
+  it('requires client_order_id for get_terminal_order', () => {
+    expect(() => getTerminalOrderInput.parse({})).toThrow()
+    expect(getTerminalOrderInput.parse({ client_order_id: 'dogabot-tabc' }).client_order_id).toBe(
+      'dogabot-tabc',
+    )
   })
 })

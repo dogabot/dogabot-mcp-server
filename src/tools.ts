@@ -12,6 +12,7 @@ import {
   listMarketsInput,
   listOrdersInput,
   listSignalsInput,
+  getTerminalOrderInput,
   listTerminalOrdersInput,
   placeTerminalOrderInput,
   searchMarketplaceInput,
@@ -160,8 +161,16 @@ export async function invokeReadTool(ctx: ToolContext, name: ReadToolName, args:
           exchange: input.exchange,
           symbol: input.symbol,
           trading_mode: input.trading_mode,
+          client_order_id: input.client_order_id,
         },
       })
+    }
+    case 'get_terminal_order': {
+      const input = getTerminalOrderInput.parse(args ?? {})
+      return client.request(
+        'GET',
+        `/terminal/orders/by-client-order-id/${encodeURIComponent(input.client_order_id)}`,
+      )
     }
     default:
       throw new Error(`Unknown tool: ${name satisfies never}`)
@@ -353,13 +362,19 @@ export const toolDefinitions = [
   {
     name: 'list_terminal_orders',
     description:
-      'List personal terminal order history for the authenticated user (terminal.orders). Optional exchange/symbol/trading_mode filters. Requires read:orders.',
+      'List personal terminal order history for the authenticated user (terminal.orders). Optional exchange/symbol/trading_mode/client_order_id filters. Requires read:orders.',
     inputSchema: zodMcpInputSchema(listTerminalOrdersInput),
+  },
+  {
+    name: 'get_terminal_order',
+    description:
+      'Fetch one personal terminal order by client_order_id from place_terminal_order. Returns 404 until order-executor persists the row — poll until 200 or timeout. Requires read:orders.',
+    inputSchema: zodMcpInputSchema(getTerminalOrderInput),
   },
   {
     name: 'place_terminal_order',
     description:
-      'Place a personal terminal market order (paper or live). Orders persist under terminal schema, not automations. Requires write:terminal API key scope, feat:terminal, and sends Idempotency-Key automatically (or pass idempotency_key). Prefer paper for testing.',
+      'Place a personal terminal market order (paper or live). Returns async ack with status=accepted and client_order_id (not a fill). Poll get_terminal_order with that id. Requires write:terminal API key scope, feat:terminal, and sends Idempotency-Key automatically (or pass idempotency_key). Prefer paper for testing.',
     inputSchema: zodMcpInputSchema(placeTerminalOrderInput),
   },
 ] as const
