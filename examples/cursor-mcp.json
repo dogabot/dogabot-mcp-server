@@ -1,10 +1,9 @@
 {
   "mcpServers": {
     "dogabot": {
-      "command": "npx",
-      "args": ["-y", "@dogabot/mcp"],
-      "env": {
-        "DOGABOT_API_KEY": "dbk_live_REPLACE_ME"
+      "url": "https://mcp.dogabot.com/mcp",
+      "headers": {
+        "Authorization": "Bearer dbk_live_REPLACE_ME"
       }
     }
   }

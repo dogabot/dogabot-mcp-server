@@ -12,7 +12,7 @@ export type ProxyOptions = {
 
 /**
  * Stdio MCP server that forwards tools/list and tools/call to the remote
- * Streamable HTTP endpoint (api.dogabot.com/mcp). Tool catalogs live on the server.
+ * Streamable HTTP endpoint (mcp.dogabot.com/mcp). Tool catalogs live on the server.
  */
 export function createRemoteProxyServer(opts: ProxyOptions): {
   server: Server

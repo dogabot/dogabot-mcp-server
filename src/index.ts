@@ -26,7 +26,7 @@ if (enableWriteTools) {
   )
 }
 
-const mcpUrl = (process.env.DOGABOT_MCP_URL || 'https://api.dogabot.com/mcp').replace(/\/$/, '')
+const mcpUrl = (process.env.DOGABOT_MCP_URL || 'https://mcp.dogabot.com/mcp').replace(/\/$/, '')
 const useEmbedded = process.env.DOGABOT_MCP_EMBEDDED === '1' || process.env.DOGABOT_MCP_EMBEDDED === 'true'
 
 function createEmbeddedServer(): Server {

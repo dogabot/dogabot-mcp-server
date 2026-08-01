@@ -16,7 +16,7 @@ No Node process required. Create an API key, then:
 {
   "mcpServers": {
     "dogabot": {
-      "url": "https://api.dogabot.com/mcp",
+      "url": "https://mcp.dogabot.com/mcp",
       "headers": {
         "Authorization": "Bearer dbk_live_REPLACE_ME"
       }
@@ -29,7 +29,7 @@ Use a **dogabot API key**, not a Clerk session JWT. Enable the server under **Se
 
 ## Stdio package (optional)
 
-Use `@dogabot/mcp` when your client only supports command/stdio MCP. By default it **proxies** to `https://api.dogabot.com/mcp` (override with `DOGABOT_MCP_URL`).
+Use `@dogabot/mcp` when your client only supports command/stdio MCP. By default it **proxies** to `https://mcp.dogabot.com/mcp` (override with `DOGABOT_MCP_URL`).
 
 **Do not run `npx -y @dogabot/mcp` in a terminal to “install”.** The AI app launches it for you.
 
@@ -84,7 +84,7 @@ That registers the server with Claude Code (it launches `npx` for you). You stil
 | Variable | Required | Default |
 |----------|----------|---------|
 | `DOGABOT_API_KEY` | Yes | — |
-| `DOGABOT_MCP_URL` | No | `https://api.dogabot.com/mcp` |
+| `DOGABOT_MCP_URL` | No | `https://mcp.dogabot.com/mcp` |
 | `DOGABOT_MCP_EMBEDDED` | No | unset (proxy mode). Set `1` for legacy in-process REST bridge. |
 
 ## Tools (v1 — read only)
