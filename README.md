@@ -1,32 +1,43 @@
 # @dogabot/mcp
 
-MCP (Model Context Protocol) server for [dogabot](https://dogabot.com). Exposes **read-only** tools that call the dogabot REST API using a scoped API key.
+MCP (Model Context Protocol) for [dogabot](https://dogabot.com). Prefer the **hosted** endpoint; this npm package is an optional stdio proxy for clients that cannot use a URL transport.
 
 ## Prerequisites
 
 - **Pro or Institutional** dogabot account
 - API key from **Settings → API Keys** (`dbk_live_...`)
-- Node.js 20+ (Cursor/Claude will use it when they launch the server)
+- For the stdio package only: Node.js 20+
 
-## Setup (no terminal install)
+## Cursor (recommended) — remote URL
 
-There is **no** `npm install` or `npx` step for you to run by hand.
+No Node process required. Create an API key, then:
 
-1. Create an API key in dogabot (**Settings → API Keys**).
-2. Copy the client config below into your AI app’s MCP settings file.
-3. Put your key in the config (replace the placeholder).
-4. Enable the **dogabot** server in the app UI (Cursor: Settings → Tools & MCP).
+```json
+{
+  "mcpServers": {
+    "dogabot": {
+      "url": "https://api.dogabot.com/mcp",
+      "headers": {
+        "Authorization": "Bearer dbk_live_REPLACE_ME"
+      }
+    }
+  }
+}
+```
 
-**Do not run `npx -y @dogabot/mcp` (or `dogabot-mcp`) in a terminal.** That command is what the AI app executes for you. Running it alone always fails with `DOGABOT_API_KEY is required` unless you also exported the key in that shell — and even then it only sits waiting for MCP protocol traffic. Use the UI toggle instead.
+Use a **dogabot API key**, not a Clerk session JWT. Enable the server under **Settings → Tools & MCP**.
 
-## Cursor (recommended)
+## Stdio package (optional)
+
+Use `@dogabot/mcp` when your client only supports command/stdio MCP. By default it **proxies** to `https://api.dogabot.com/mcp` (override with `DOGABOT_MCP_URL`).
+
+**Do not run `npx -y @dogabot/mcp` in a terminal to “install”.** The AI app launches it for you.
 
 1. Copy [`examples/cursor-mcp.json`](examples/cursor-mcp.json) into `.cursor/mcp.json` (merge with existing `mcpServers` if needed).
-2. Replace `dbk_live_REPLACE_ME` with your API key (or set `DOGABOT_API_KEY` in your OS environment and use `"${env:DOGABOT_API_KEY}"` instead of the literal key).
-3. Reload Cursor.
-4. Open **Settings → Tools & MCP** and enable **dogabot**.
+2. Replace `dbk_live_REPLACE_ME` with your API key.
+3. Reload Cursor and enable **dogabot**.
 
-Example (after replacing the key):
+Example:
 
 ```json
 {
@@ -41,8 +52,6 @@ Example (after replacing the key):
   }
 }
 ```
-
-Cursor downloads and starts `@dogabot/mcp` automatically when the server is enabled. You only toggle it on/off in the UI.
 
 ### Troubleshooting (Cursor)
 
@@ -72,7 +81,11 @@ That registers the server with Claude Code (it launches `npx` for you). You stil
 
 ## Environment variables
 
-Only `DOGABOT_API_KEY` is required. The server uses the production dogabot REST API by default.
+| Variable | Required | Default |
+|----------|----------|---------|
+| `DOGABOT_API_KEY` | Yes | — |
+| `DOGABOT_MCP_URL` | No | `https://api.dogabot.com/mcp` |
+| `DOGABOT_MCP_EMBEDDED` | No | unset (proxy mode). Set `1` for legacy in-process REST bridge. |
 
 ## Tools (v1 — read only)
 
