@@ -205,6 +205,8 @@ export async function invokeReadTool(ctx: ToolContext, name: ReadToolName, args:
         },
       })
     }
+    case 'list_terminal_emitters':
+      return client.request('GET', '/me/emitters')
     case 'get_terminal_symbol_rules': {
       const input = getTerminalSymbolRulesInput.parse(args)
       return client.request('GET', '/terminal/symbol-rules', {
@@ -469,6 +471,12 @@ export const toolDefinitions = [
     inputSchema: zodMcpInputSchema(listTerminalPositionsInput),
   },
   {
+    name: 'list_terminal_emitters',
+    description:
+      'List owned Traders-category emitters eligible for terminal Leader broadcast (running/stopped). Use emitter id with place_terminal_order broadcast_mode=leader. Requires read:automations.',
+    inputSchema: { type: 'object', properties: {} },
+  },
+  {
     name: 'get_terminal_symbol_rules',
     description: 'Lot size / min notional / quantity rules for an exchange symbol. Requires read:markets.',
     inputSchema: zodMcpInputSchema(getTerminalSymbolRulesInput),
@@ -476,7 +484,7 @@ export const toolDefinitions = [
   {
     name: 'place_terminal_order',
     description:
-      'Place a personal terminal market order (paper or live). Returns async ack with status=accepted and client_order_id (not a fill). Poll get_terminal_order with that id. Requires write:terminal API key scope, feat:terminal, and sends Idempotency-Key automatically (or pass idempotency_key). Prefer paper for testing.',
+      'Place a terminal market order. Personal: paper/live on your session (poll get_terminal_order). Leader: broadcast_mode=leader requires emitter_id from list_terminal_emitters (Traders category); fans out to followers — prefer paper. Requires write:terminal, feat:terminal; Idempotency-Key sent automatically.',
     inputSchema: zodMcpInputSchema(placeTerminalOrderInput),
   },
 ] as const

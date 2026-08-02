@@ -216,6 +216,7 @@ export type ReadToolName =
   | 'list_terminal_orders'
   | 'get_terminal_order'
   | 'list_terminal_positions'
+  | 'list_terminal_emitters'
   | 'get_terminal_symbol_rules'
 
 export type WriteToolName = 'place_terminal_order' | 'create_backtest' | 'cancel_backtest'
@@ -244,6 +245,7 @@ export const READ_TOOLS: ReadToolName[] = [
   'list_terminal_orders',
   'get_terminal_order',
   'list_terminal_positions',
+  'list_terminal_emitters',
   'get_terminal_symbol_rules',
 ]
 
@@ -290,10 +292,15 @@ export const toolRouteMap: Record<ToolName, { method: string; path: string; note
     note: 'poll after place_terminal_order until 200 or timeout',
   },
   list_terminal_positions: { method: 'GET', path: '/terminal/positions', note: 'default paper; MCP may filter/cap' },
+  list_terminal_emitters: {
+    method: 'GET',
+    path: '/me/emitters',
+    note: 'Traders-category emitters for Leader broadcast',
+  },
   get_terminal_symbol_rules: { method: 'GET', path: '/terminal/symbol-rules' },
   place_terminal_order: {
     method: 'POST',
     path: '/terminal/place-order',
-    note: 'requires write:terminal + Idempotency-Key; returns accepted + client_order_id',
+    note: 'personal or leader; leader needs Traders emitter_id from list_terminal_emitters',
   },
 }
