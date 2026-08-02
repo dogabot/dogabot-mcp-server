@@ -3,17 +3,23 @@ import { zodMcpInputSchema } from './mcp-json-schema.js'
 import {
   getAutomationInput,
   getBacktestInput,
+  getBacktestSignalsInput,
   getCandlesInput,
   getPnlSeriesInput,
   getPositionInput,
   getTickerInput,
+  getTerminalOrderInput,
+  getTerminalSymbolRulesInput,
   listAutomationsInput,
   listBacktestsInput,
+  listExchangesInput,
   listMarketsInput,
   listOrdersInput,
   listSignalsInput,
-  getTerminalOrderInput,
   listTerminalOrdersInput,
+  listTerminalPositionsInput,
+  cancelBacktestInput,
+  createBacktestInput,
   placeTerminalOrderInput,
   searchMarketplaceInput,
   type ReadToolName,
@@ -121,6 +127,15 @@ export async function invokeReadTool(ctx: ToolContext, name: ReadToolName, args:
       const input = getBacktestInput.parse(args)
       return client.request('GET', `/backtest/${encodeURIComponent(input.job_id)}`)
     }
+    case 'get_backtest_signals': {
+      const input = getBacktestSignalsInput.parse(args)
+      return client.request('GET', `/backtest/${encodeURIComponent(input.job_id)}/signals`, {
+        query: {
+          limit: input.limit ?? 50,
+          offset: input.offset ?? 0,
+        },
+      })
+    }
     case 'search_marketplace': {
       const input = searchMarketplaceInput.parse(args ?? {})
       return client.request('GET', '/marketplace/search', {
@@ -131,6 +146,15 @@ export async function invokeReadTool(ctx: ToolContext, name: ReadToolName, args:
       const input = listMarketsInput.parse(args ?? {})
       return client.request('GET', '/markets', {
         query: { exchange: input.exchange, limit: input.limit ?? 50 },
+      })
+    }
+    case 'list_exchanges': {
+      const input = listExchangesInput.parse(args ?? {})
+      return client.request('GET', '/exchanges', {
+        query: {
+          active_only: input.is_backtestable ? undefined : input.active_only !== false ? 'true' : 'false',
+          is_backtestable: input.is_backtestable ? 'true' : undefined,
+        },
       })
     }
     case 'get_ticker': {
@@ -172,6 +196,21 @@ export async function invokeReadTool(ctx: ToolContext, name: ReadToolName, args:
         `/terminal/orders/by-client-order-id/${encodeURIComponent(input.client_order_id)}`,
       )
     }
+    case 'list_terminal_positions': {
+      const input = listTerminalPositionsInput.parse(args ?? {})
+      return client.request('GET', '/terminal/positions', {
+        query: {
+          trading_mode: input.trading_mode ?? 'paper',
+          // exchange/symbol/limit filtered client-side by hosted MCP; embedded passes trading_mode only
+        },
+      })
+    }
+    case 'get_terminal_symbol_rules': {
+      const input = getTerminalSymbolRulesInput.parse(args)
+      return client.request('GET', '/terminal/symbol-rules', {
+        query: { exchange: input.exchange, symbol: input.symbol },
+      })
+    }
     default:
       throw new Error(`Unknown tool: ${name satisfies never}`)
   }
@@ -197,6 +236,35 @@ export async function invokeWriteTool(ctx: ToolContext, name: WriteToolName, arg
           broadcast_mode: input.broadcast_mode,
           emitter_id: input.emitter_id,
         },
+      })
+    }
+    case 'create_backtest': {
+      const input = createBacktestInput.parse(args)
+      const idempotencyKey =
+        input.idempotency_key?.trim() ||
+        `mcp-bt-${Date.now()}-${Math.random().toString(36).slice(2, 10)}`
+      return client.request('POST', '/backtest', {
+        headers: { 'Idempotency-Key': idempotencyKey },
+        body: {
+          name: input.name,
+          symbol: input.symbol,
+          exchange: input.exchange,
+          candle_timeframe: input.candle_timeframe,
+          execution_interval: input.execution_interval,
+          start_time: input.start_time,
+          end_time: input.end_time,
+          initial_capital: input.initial_capital,
+          params: input.params ?? {},
+        },
+      })
+    }
+    case 'cancel_backtest': {
+      const input = cancelBacktestInput.parse(args)
+      const idempotencyKey =
+        input.idempotency_key?.trim() ||
+        `mcp-bt-cancel-${Date.now()}-${Math.random().toString(36).slice(2, 10)}`
+      return client.request('POST', `/backtest/${encodeURIComponent(input.job_id)}/cancel`, {
+        headers: { 'Idempotency-Key': idempotencyKey },
       })
     }
     default:
@@ -309,6 +377,24 @@ export const toolDefinitions = [
     },
   },
   {
+    name: 'get_backtest_signals',
+    description:
+      'Paginated backtest trade signals (limit default 50, max 100). Full history is kept for 24 hours after create; afterward only the latest 20 trades remain. Response includes retention_notice. Read-only.',
+    inputSchema: zodMcpInputSchema(getBacktestSignalsInput),
+  },
+  {
+    name: 'create_backtest',
+    description:
+      'Enqueue a single backtest. Requires write:backtest. Check get_backtest_quota first. Max 10 enqueued/running per user (429 if exceeded). Prefer cancel_backtest over blasting creates. Sends Idempotency-Key automatically.',
+    inputSchema: zodMcpInputSchema(createBacktestInput),
+  },
+  {
+    name: 'cancel_backtest',
+    description:
+      'Cancel an enqueued or running backtest you own. Requires write:backtest. Sends Idempotency-Key automatically.',
+    inputSchema: zodMcpInputSchema(cancelBacktestInput),
+  },
+  {
     name: 'search_marketplace',
     description: 'Search marketplace emitter listings. Read-only.',
     inputSchema: {
@@ -329,6 +415,11 @@ export const toolDefinitions = [
         limit: { type: 'integer' },
       },
     },
+  },
+  {
+    name: 'list_exchanges',
+    description: 'List exchanges (default active_only=true). Cap 100. Read-only.',
+    inputSchema: zodMcpInputSchema(listExchangesInput),
   },
   {
     name: 'get_ticker',
@@ -370,6 +461,17 @@ export const toolDefinitions = [
     description:
       'Fetch one personal terminal order by client_order_id from place_terminal_order. Returns 404 until order-executor persists the row — poll until 200 or timeout. Requires read:orders.',
     inputSchema: zodMcpInputSchema(getTerminalOrderInput),
+  },
+  {
+    name: 'list_terminal_positions',
+    description:
+      'List open terminal positions (default paper). Optional exchange/symbol filters; limit default 50 max 100. Requires read:orders.',
+    inputSchema: zodMcpInputSchema(listTerminalPositionsInput),
+  },
+  {
+    name: 'get_terminal_symbol_rules',
+    description: 'Lot size / min notional / quantity rules for an exchange symbol. Requires read:markets.',
+    inputSchema: zodMcpInputSchema(getTerminalSymbolRulesInput),
   },
   {
     name: 'place_terminal_order',

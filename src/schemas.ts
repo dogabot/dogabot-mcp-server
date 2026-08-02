@@ -104,6 +104,30 @@ export const getBacktestInput = z.object({
   job_id: z.string().min(1),
 })
 
+export const getBacktestSignalsInput = z.object({
+  job_id: z.string().min(1),
+  limit: z.number().int().min(1).max(100).optional(),
+  offset: z.number().int().min(0).optional(),
+})
+
+export const createBacktestInput = z.object({
+  name: z.string().min(1).max(200),
+  symbol: z.string().min(1),
+  exchange: z.string().min(1),
+  candle_timeframe: z.string().min(1),
+  execution_interval: z.number().int().positive(),
+  start_time: z.number().int(),
+  end_time: z.number().int(),
+  initial_capital: z.number().min(0).optional(),
+  params: z.record(z.string(), z.unknown()).optional(),
+  idempotency_key: z.string().min(1).optional(),
+})
+
+export const cancelBacktestInput = z.object({
+  job_id: z.string().min(1),
+  idempotency_key: z.string().min(1).optional(),
+})
+
 export const searchMarketplaceInput = z.object({
   q: z.string().optional(),
   limit: z.number().int().min(1).max(50).optional(),
@@ -112,6 +136,11 @@ export const searchMarketplaceInput = z.object({
 export const listMarketsInput = z.object({
   exchange: z.string().optional(),
   limit: z.number().int().min(1).max(100).optional(),
+})
+
+export const listExchangesInput = z.object({
+  active_only: z.boolean().optional().default(true),
+  is_backtestable: z.boolean().optional(),
 })
 
 export const getTickerInput = z.object({
@@ -141,6 +170,18 @@ export const getTerminalOrderInput = z.object({
   client_order_id: z.string().min(1),
 })
 
+export const listTerminalPositionsInput = z.object({
+  trading_mode: z.enum(['live', 'paper']).optional().default('paper'),
+  exchange: z.string().optional(),
+  symbol: z.string().optional(),
+  limit: z.number().int().min(1).max(100).optional(),
+})
+
+export const getTerminalSymbolRulesInput = z.object({
+  exchange: z.string().min(1),
+  symbol: z.string().min(1),
+})
+
 export const placeTerminalOrderInput = z.object({
   exchange: z.string().min(1),
   symbol: z.string().min(1),
@@ -166,14 +207,18 @@ export type ReadToolName =
   | 'get_backtest_quota'
   | 'list_backtests'
   | 'get_backtest'
+  | 'get_backtest_signals'
   | 'search_marketplace'
   | 'list_markets'
+  | 'list_exchanges'
   | 'get_ticker'
   | 'get_candles'
   | 'list_terminal_orders'
   | 'get_terminal_order'
+  | 'list_terminal_positions'
+  | 'get_terminal_symbol_rules'
 
-export type WriteToolName = 'place_terminal_order'
+export type WriteToolName = 'place_terminal_order' | 'create_backtest' | 'cancel_backtest'
 
 export type ToolName = ReadToolName | WriteToolName
 
@@ -190,15 +235,19 @@ export const READ_TOOLS: ReadToolName[] = [
   'get_backtest_quota',
   'list_backtests',
   'get_backtest',
+  'get_backtest_signals',
   'search_marketplace',
   'list_markets',
+  'list_exchanges',
   'get_ticker',
   'get_candles',
   'list_terminal_orders',
   'get_terminal_order',
+  'list_terminal_positions',
+  'get_terminal_symbol_rules',
 ]
 
-export const WRITE_TOOLS: WriteToolName[] = ['place_terminal_order']
+export const WRITE_TOOLS: WriteToolName[] = ['place_terminal_order', 'create_backtest', 'cancel_backtest']
 
 /** Maps MCP tool names to REST endpoints. */
 export const toolRouteMap: Record<ToolName, { method: string; path: string; note?: string }> = {
@@ -214,8 +263,24 @@ export const toolRouteMap: Record<ToolName, { method: string; path: string; note
   get_backtest_quota: { method: 'GET', path: '/backtest/quota' },
   list_backtests: { method: 'GET', path: '/backtests' },
   get_backtest: { method: 'GET', path: '/backtest/:job_id', note: 'resolved at runtime' },
+  get_backtest_signals: {
+    method: 'GET',
+    path: '/backtest/:job_id/signals',
+    note: 'paginated; retention metadata on response',
+  },
+  create_backtest: {
+    method: 'POST',
+    path: '/backtest',
+    note: 'requires write:backtest + Idempotency-Key; max 10 in-flight',
+  },
+  cancel_backtest: {
+    method: 'POST',
+    path: '/backtest/:job_id/cancel',
+    note: 'requires write:backtest + Idempotency-Key',
+  },
   search_marketplace: { method: 'GET', path: '/marketplace/search' },
   list_markets: { method: 'GET', path: '/markets' },
+  list_exchanges: { method: 'GET', path: '/exchanges', note: 'default active_only=true' },
   get_ticker: { method: 'GET', path: '/ticker' },
   get_candles: { method: 'GET', path: '/datafeed/history' },
   list_terminal_orders: { method: 'GET', path: '/terminal/orders' },
@@ -224,5 +289,11 @@ export const toolRouteMap: Record<ToolName, { method: string; path: string; note
     path: '/terminal/orders/by-client-order-id/:client_order_id',
     note: 'poll after place_terminal_order until 200 or timeout',
   },
-  place_terminal_order: { method: 'POST', path: '/terminal/place-order', note: 'requires write:terminal + Idempotency-Key; returns accepted + client_order_id' },
+  list_terminal_positions: { method: 'GET', path: '/terminal/positions', note: 'default paper; MCP may filter/cap' },
+  get_terminal_symbol_rules: { method: 'GET', path: '/terminal/symbol-rules' },
+  place_terminal_order: {
+    method: 'POST',
+    path: '/terminal/place-order',
+    note: 'requires write:terminal + Idempotency-Key; returns accepted + client_order_id',
+  },
 }

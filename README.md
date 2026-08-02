@@ -103,12 +103,24 @@ That registers the server with Claude Code (it launches `npx` for you). You stil
 | `get_backtest_quota` | Backtest quota |
 | `list_backtests` | Backtest results (sort/filter; optional `enabled_rule`) |
 | `get_backtest` | Single backtest detail |
+| `get_backtest_signals` | Paginated backtest trades (+ 24h/keep-20 retention notice) |
 | `search_marketplace` | Marketplace search |
 | `list_markets` | Markets list |
+| `list_exchanges` | Exchanges list (default active only) |
 | `get_ticker` | Ticker snapshot |
 | `get_candles` | OHLCV history |
+| `list_terminal_orders` | Personal terminal order history |
+| `get_terminal_order` | Terminal order by `client_order_id` |
+| `list_terminal_positions` | Open terminal positions (default paper) |
+| `get_terminal_symbol_rules` | Lot / min-notional rules |
 
-Write tools are **not** registered in v1.
+**Write tools** (scoped API key + Idempotency-Key):
+
+| Tool | Notes |
+|------|--------|
+| `place_terminal_order` | Requires `write:terminal`; prefer paper |
+| `create_backtest` | Requires `write:backtest`; check quota; max 10 in-flight |
+| `cancel_backtest` | Requires `write:backtest` |
 
 ## Security
 
@@ -116,14 +128,13 @@ Every request requires a valid **scoped API key** — there is no anonymous acce
 
 - **Authentication required** — invalid or missing keys are rejected; failed attempts are rate-limited.
 - **Per-key rate limits** — Pro keys are capped (60 requests/minute per key); institutional keys have higher limits.
-- **Read-only on Pro** — MCP v1 exposes read tools only; agents cannot start, stop, or change automations via MCP.
-- **Scoped keys** — each key is limited to explicit read permissions (account, automations, orders, markets, etc.).
+- **Writes are scoped** — backtest writes need institutional `feat:api:write` + `write:backtest`; terminal place needs `write:terminal` + `feat:terminal`. Automation lifecycle start/stop remains REST-only.
+- **Scoped keys** — each key is limited to explicit permissions (account, automations, orders, markets, backtests, etc.).
 - **No exchange credentials** — API keys cannot access exchange API secrets; connect exchanges only in the webapp.
 - **Use a dedicated key** — create a separate key for MCP (e.g. “Cursor MCP”) and revoke it when you stop using it.
 - **Never commit keys** — keep `DOGABOT_API_KEY` out of git; prefer OS env / secret manager, or a private local `.cursor/mcp.json` that is not committed.
 
-Institutional write access for automation lifecycle is via the REST API only (with `Idempotency-Key`). MCP includes **`place_terminal_order`** (async ack + `client_order_id`), **`get_terminal_order`**, and **`list_terminal_orders`** for personal terminal trading (requires `write:terminal` / `read:orders` on the API key).
-
+Institutional automation lifecycle mutations remain REST-only (with `Idempotency-Key`). MCP write surface: terminal place + create/cancel backtest as above.
 ## Related
 
 - [API keys & MCP (Learn Center)](https://learn.dogabot.com/help/api-keys-and-mcp)

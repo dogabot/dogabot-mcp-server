@@ -1,10 +1,84 @@
 import { describe, expect, it, vi } from 'vitest'
 import type { DogabotClient } from './client.js'
-import { invokeReadTool } from './tools.js'
+import { invokeReadTool, invokeWriteTool } from './tools.js'
 
 const ctx = {
   client: { request: vi.fn() } as unknown as DogabotClient,
 }
+
+describe('invokeWriteTool create_backtest', () => {
+  it('posts /backtest with Idempotency-Key', async () => {
+    const request = vi.fn().mockResolvedValue({ job_id: 'abc' })
+    const client = { request } as unknown as DogabotClient
+
+    await invokeWriteTool({ ...ctx, client }, 'create_backtest', {
+      name: 'MCP soak',
+      symbol: 'BTCUSDT',
+      exchange: 'bybit_linear',
+      candle_timeframe: '1h',
+      execution_interval: 3600000,
+      start_time: 1,
+      end_time: 2,
+      params: { entry: { rules: {} } },
+      idempotency_key: 'fixed-key',
+    })
+
+    expect(request).toHaveBeenCalledWith('POST', '/backtest', {
+      headers: { 'Idempotency-Key': 'fixed-key' },
+      body: expect.objectContaining({
+        name: 'MCP soak',
+        exchange: 'bybit_linear',
+        candle_timeframe: '1h',
+      }),
+    })
+  })
+})
+
+describe('invokeWriteTool cancel_backtest', () => {
+  it('posts cancel with Idempotency-Key', async () => {
+    const request = vi.fn().mockResolvedValue({ status: 'cancelled' })
+    const client = { request } as unknown as DogabotClient
+
+    await invokeWriteTool({ ...ctx, client }, 'cancel_backtest', {
+      job_id: 'job-1',
+      idempotency_key: 'cancel-key',
+    })
+
+    expect(request).toHaveBeenCalledWith('POST', '/backtest/job-1/cancel', {
+      headers: { 'Idempotency-Key': 'cancel-key' },
+    })
+  })
+})
+
+describe('invokeReadTool get_backtest_signals', () => {
+  it('calls signals with limit and offset', async () => {
+    const request = vi.fn().mockResolvedValue({ items: [], total: 0 })
+    const client = { request } as unknown as DogabotClient
+
+    await invokeReadTool({ ...ctx, client }, 'get_backtest_signals', {
+      job_id: 'job-1',
+      limit: 20,
+      offset: 40,
+    })
+
+    expect(request).toHaveBeenCalledWith('GET', '/backtest/job-1/signals', {
+      query: { limit: 20, offset: 40 },
+    })
+  })
+})
+
+describe('invokeReadTool list_exchanges', () => {
+  it('defaults active_only=true', async () => {
+    const request = vi.fn().mockResolvedValue({ data: [] })
+    const client = { request } as unknown as DogabotClient
+
+    await invokeReadTool({ ...ctx, client }, 'list_exchanges', {})
+
+    expect(request).toHaveBeenCalledWith('GET', '/exchanges', {
+      query: { active_only: 'true', is_backtestable: undefined },
+    })
+  })
+})
 
 describe('invokeReadTool get_candles', () => {
   it('calls datafeed/history with exchange, symbol, resolution, and countback', async () => {
