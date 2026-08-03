@@ -177,6 +177,11 @@ export const listTerminalPositionsInput = z.object({
   limit: z.number().int().min(1).max(100).optional(),
 })
 
+export const listExchangeBalancesInput = z.object({
+  exchange: z.string().min(1),
+  include_zero: z.boolean().optional(),
+})
+
 export const getTerminalSymbolRulesInput = z.object({
   exchange: z.string().min(1),
   symbol: z.string().min(1),
@@ -217,6 +222,7 @@ export type ReadToolName =
   | 'get_terminal_order'
   | 'list_terminal_positions'
   | 'list_terminal_emitters'
+  | 'list_exchange_balances'
   | 'get_terminal_symbol_rules'
 
 export type WriteToolName = 'place_terminal_order' | 'create_backtest' | 'cancel_backtest'
@@ -246,6 +252,7 @@ export const READ_TOOLS: ReadToolName[] = [
   'get_terminal_order',
   'list_terminal_positions',
   'list_terminal_emitters',
+  'list_exchange_balances',
   'get_terminal_symbol_rules',
 ]
 
@@ -296,6 +303,11 @@ export const toolRouteMap: Record<ToolName, { method: string; path: string; note
     method: 'GET',
     path: '/me/emitters',
     note: 'Traders-category emitters for Leader broadcast',
+  },
+  list_exchange_balances: {
+    method: 'GET',
+    path: '/terminal/exchange-balances',
+    note: 'live venue wallet; not stored; not terminal/automation positions',
   },
   get_terminal_symbol_rules: { method: 'GET', path: '/terminal/symbol-rules' },
   place_terminal_order: {

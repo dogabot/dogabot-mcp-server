@@ -18,6 +18,7 @@ import {
   listSignalsInput,
   listTerminalOrdersInput,
   listTerminalPositionsInput,
+  listExchangeBalancesInput,
   cancelBacktestInput,
   createBacktestInput,
   placeTerminalOrderInput,
@@ -207,6 +208,15 @@ export async function invokeReadTool(ctx: ToolContext, name: ReadToolName, args:
     }
     case 'list_terminal_emitters':
       return client.request('GET', '/me/emitters')
+    case 'list_exchange_balances': {
+      const input = listExchangeBalancesInput.parse(args)
+      return client.request('GET', '/terminal/exchange-balances', {
+        query: {
+          exchange: input.exchange,
+          ...(input.include_zero ? { include_zero: '1' } : {}),
+        },
+      })
+    }
     case 'get_terminal_symbol_rules': {
       const input = getTerminalSymbolRulesInput.parse(args)
       return client.request('GET', '/terminal/symbol-rules', {
@@ -475,6 +485,12 @@ export const toolDefinitions = [
     description:
       'List owned Traders-category emitters eligible for terminal Leader broadcast (running/stopped). Use emitter id with place_terminal_order broadcast_mode=leader. Requires read:automations.',
     inputSchema: { type: 'object', properties: {} },
+  },
+  {
+    name: 'list_exchange_balances',
+    description:
+      'Live exchange wallet balances (free/locked) for one exchange — not stored in dogabot; not terminal session positions and not automation (bot/emitter) positions. Example: a running Bot BTC position on Binance will not appear here; Bitget USDT free balance will. Requires live credentials and read:orders.',
+    inputSchema: zodMcpInputSchema(listExchangeBalancesInput),
   },
   {
     name: 'get_terminal_symbol_rules',
