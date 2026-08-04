@@ -96,8 +96,8 @@ That registers the server with Claude Code (it launches `npx` for you). You stil
 | `get_automation` | Single automation detail (config) |
 | `get_pnl_series` | Daily PnL series (`period` 7d/30d/90d/all) |
 | `get_position` | Open position for one automation |
-| `get_user_statistics` | Account statistics |
-| `get_positions` | Open positions |
+| `get_user_statistics` | Account statistics (`trading_mode`, `automation_type`; use `terminal` for personal terminal-only) |
+| `get_positions` | Open positions (`trading_mode`, `automation_type`; use `terminal` for personal terminal sessions) |
 | `list_orders` | Order history (`follower_id` or `bot_id`) |
 | `list_signals` | Emitter signal history (`emitter_id`) |
 | `get_backtest_quota` | Backtest quota |

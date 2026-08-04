@@ -42,6 +42,14 @@ export const getPositionInput = z.object({
   id: z.number().int().positive(),
 })
 
+/** Dashboard aggregate filters — matches GET /me/statistics and /me/positions. */
+export const dashboardAggFiltersInput = z.object({
+  trading_mode: z.enum(['live', 'paper']).optional(),
+  automation_type: z
+    .enum(['followers', 'emitters', 'bots', 'portfolios', 'terminal', 'all'])
+    .optional(),
+})
+
 export const listOrdersInput = z
   .object({
     follower_id: z.number().int().positive().optional(),

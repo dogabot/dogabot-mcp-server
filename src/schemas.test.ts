@@ -3,6 +3,7 @@ import {
   getPnlSeriesInput,
   getPositionInput,
   getTerminalOrderInput,
+  dashboardAggFiltersInput,
   listAutomationsInput,
   listBacktestsInput,
   listOrdersInput,
@@ -91,6 +92,25 @@ describe('read tool manifest', () => {
     expect(() => listOrdersInput.parse({ follower_id: 1, bot_id: 2 })).toThrow(/follower_id or bot_id/)
     expect(listOrdersInput.parse({ follower_id: 9 }).follower_id).toBe(9)
     expect(listOrdersInput.parse({ bot_id: 3 }).bot_id).toBe(3)
+  })
+
+  it('accepts dashboard aggregate filters for stats/positions', () => {
+    expect(dashboardAggFiltersInput.parse({})).toEqual({})
+    expect(
+      dashboardAggFiltersInput.parse({ trading_mode: 'paper', automation_type: 'terminal' }),
+    ).toEqual({ trading_mode: 'paper', automation_type: 'terminal' })
+    expect(() => dashboardAggFiltersInput.parse({ automation_type: 'bot' })).toThrow()
+    expect(() => dashboardAggFiltersInput.parse({ trading_mode: 'demo' })).toThrow()
+  })
+
+  it('advertises automation_type on get_user_statistics and get_positions', () => {
+    for (const name of ['get_user_statistics', 'get_positions'] as const) {
+      const tool = toolDefinitions.find((t) => t.name === name)
+      expect(tool).toBeDefined()
+      const props = (tool!.inputSchema as { properties?: Record<string, unknown> }).properties
+      expect(props).toHaveProperty('trading_mode')
+      expect(props).toHaveProperty('automation_type')
+    }
   })
 
   it('requires client_order_id for get_terminal_order', () => {

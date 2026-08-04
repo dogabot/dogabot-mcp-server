@@ -7,6 +7,7 @@ import {
   getCandlesInput,
   getPnlSeriesInput,
   getPositionInput,
+  dashboardAggFiltersInput,
   getTickerInput,
   getTerminalOrderInput,
   getTerminalSymbolRulesInput,
@@ -75,10 +76,24 @@ export async function invokeReadTool(ctx: ToolContext, name: ReadToolName, args:
       const input = getPositionInput.parse(args)
       return client.request('GET', automationPositionPath(input.type, input.id))
     }
-    case 'get_user_statistics':
-      return client.request('GET', '/me/statistics')
-    case 'get_positions':
-      return client.request('GET', '/me/positions')
+    case 'get_user_statistics': {
+      const input = dashboardAggFiltersInput.parse(args ?? {})
+      return client.request('GET', '/me/statistics', {
+        query: {
+          trading_mode: input.trading_mode,
+          automation_type: input.automation_type,
+        },
+      })
+    }
+    case 'get_positions': {
+      const input = dashboardAggFiltersInput.parse(args ?? {})
+      return client.request('GET', '/me/positions', {
+        query: {
+          trading_mode: input.trading_mode,
+          automation_type: input.automation_type,
+        },
+      })
+    }
     case 'list_orders': {
       const input = listOrdersInput.parse(args ?? {})
       return client.request('GET', '/orders', {
@@ -349,13 +364,15 @@ export const toolDefinitions = [
   },
   {
     name: 'get_user_statistics',
-    description: 'Dashboard-level user statistics. Read-only.',
-    inputSchema: { type: 'object', properties: {} },
+    description:
+      'Dashboard-level user statistics (running count, capital, volume). Optional trading_mode (live|paper, default live) and automation_type (followers|emitters|bots|portfolios|terminal|all, default all). Use automation_type=terminal for personal terminal-only stats. Read-only.',
+    inputSchema: zodMcpInputSchema(dashboardAggFiltersInput),
   },
   {
     name: 'get_positions',
-    description: 'Aggregated open positions. Read-only.',
-    inputSchema: { type: 'object', properties: {} },
+    description:
+      'Aggregated open positions by symbol and exchange. Optional trading_mode (live|paper, default live) and automation_type (followers|emitters|bots|portfolios|terminal|all, default all). Use automation_type=terminal for personal terminal sessions only. Read-only.',
+    inputSchema: zodMcpInputSchema(dashboardAggFiltersInput),
   },
   {
     name: 'list_orders',
