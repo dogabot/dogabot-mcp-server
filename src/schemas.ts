@@ -180,6 +180,8 @@ export const listTerminalPositionsInput = z.object({
 export const listExchangeBalancesInput = z.object({
   exchange: z.string().min(1),
   include_zero: z.boolean().optional(),
+  /** When set, returns only that asset row (including zero balance). */
+  asset: z.string().min(1).optional(),
 })
 
 export const getTerminalSymbolRulesInput = z.object({
@@ -307,7 +309,7 @@ export const toolRouteMap: Record<ToolName, { method: string; path: string; note
   list_exchange_balances: {
     method: 'GET',
     path: '/terminal/exchange-balances',
-    note: 'live venue wallet; not stored; not terminal/automation positions',
+    note: 'live venue wallet; not stored; optional asset filter; not terminal/automation positions',
   },
   get_terminal_symbol_rules: { method: 'GET', path: '/terminal/symbol-rules' },
   place_terminal_order: {

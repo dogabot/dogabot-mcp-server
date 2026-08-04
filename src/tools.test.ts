@@ -80,6 +80,22 @@ describe('invokeReadTool list_exchanges', () => {
   })
 })
 
+describe('invokeReadTool list_exchange_balances', () => {
+  it('passes exchange and optional asset', async () => {
+    const request = vi.fn().mockResolvedValue({ exchange: 'binance_spot', assets: [] })
+    const client = { request } as unknown as DogabotClient
+
+    await invokeReadTool({ ...ctx, client }, 'list_exchange_balances', {
+      exchange: 'binance_spot',
+      asset: 'USDT',
+    })
+
+    expect(request).toHaveBeenCalledWith('GET', '/terminal/exchange-balances', {
+      query: { exchange: 'binance_spot', asset: 'USDT' },
+    })
+  })
+})
+
 describe('invokeReadTool get_candles', () => {
   it('calls datafeed/history with exchange, symbol, resolution, and countback', async () => {
     const request = vi.fn().mockResolvedValue({ s: 'ok', t: [1], o: [2], h: [3], l: [1], c: [2], v: [10] })

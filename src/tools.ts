@@ -214,6 +214,7 @@ export async function invokeReadTool(ctx: ToolContext, name: ReadToolName, args:
         query: {
           exchange: input.exchange,
           ...(input.include_zero ? { include_zero: '1' } : {}),
+          ...(input.asset ? { asset: input.asset } : {}),
         },
       })
     }
@@ -489,7 +490,7 @@ export const toolDefinitions = [
   {
     name: 'list_exchange_balances',
     description:
-      'Live exchange wallet balances (free/locked) for one exchange — not stored in dogabot; not terminal session positions and not automation (bot/emitter) positions. Example: a running Bot BTC position on Binance will not appear here; Bitget USDT free balance will. Requires live credentials and read:orders.',
+      'Live exchange wallet balances (free/locked) for one exchange — not stored in dogabot; not terminal session positions and not automation (bot/emitter) positions. Example: a running Bot BTC position on Binance will not appear here; Bitget USDT free balance will. Optional asset (e.g. USDT) returns only that row including zero. Requires live credentials and read:orders.',
     inputSchema: zodMcpInputSchema(listExchangeBalancesInput),
   },
   {

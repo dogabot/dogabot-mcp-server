@@ -1,6 +1,6 @@
 {
   "name": "@dogabot/mcp",
-  "version": "0.2.6",
+  "version": "0.2.8",
   "description": "dogabot MCP stdio proxy to https://mcp.dogabot.com/mcp (API key auth)",
   "type": "module",
   "bin": {
