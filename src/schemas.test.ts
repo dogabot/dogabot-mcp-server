@@ -3,6 +3,7 @@ import {
   getPnlSeriesInput,
   getPositionInput,
   getTerminalOrderInput,
+  cancelTerminalOrderInput,
   dashboardAggFiltersInput,
   listAutomationsInput,
   listBacktestsInput,
@@ -113,10 +114,13 @@ describe('read tool manifest', () => {
     }
   })
 
-  it('requires client_order_id for get_terminal_order', () => {
-    expect(() => getTerminalOrderInput.parse({})).toThrow()
-    expect(getTerminalOrderInput.parse({ client_order_id: 'dogabot-tabc' }).client_order_id).toBe(
+  it('requires client_order_id or order_id for cancel_terminal_order', () => {
+    expect(() => cancelTerminalOrderInput.parse({})).toThrow(/client_order_id or order_id/)
+    expect(cancelTerminalOrderInput.parse({ client_order_id: 'dogabot-tabc' }).client_order_id).toBe(
       'dogabot-tabc',
+    )
+    expect(cancelTerminalOrderInput.parse({ order_id: '1', exchange: 'binance_usdm', symbol: 'BTCUSDT' }).order_id).toBe(
+      '1',
     )
   })
 })

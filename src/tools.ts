@@ -21,6 +21,7 @@ import {
   listTerminalPositionsInput,
   listExchangeBalancesInput,
   cancelBacktestInput,
+  cancelTerminalOrderInput,
   createBacktestInput,
   placeTerminalOrderInput,
   searchMarketplaceInput,
@@ -263,6 +264,22 @@ export async function invokeWriteTool(ctx: ToolContext, name: WriteToolName, arg
           trading_mode: input.trading_mode,
           broadcast_mode: input.broadcast_mode,
           emitter_id: input.emitter_id,
+        },
+      })
+    }
+    case 'cancel_terminal_order': {
+      const input = cancelTerminalOrderInput.parse(args)
+      const idempotencyKey =
+        input.idempotency_key?.trim() ||
+        `mcp-term-cancel-${Date.now()}-${Math.random().toString(36).slice(2, 10)}`
+      return client.request('POST', '/terminal/cancel-order', {
+        headers: { 'Idempotency-Key': idempotencyKey },
+        body: {
+          client_order_id: input.client_order_id,
+          order_id: input.order_id,
+          exchange: input.exchange,
+          symbol: input.symbol,
+          trading_mode: input.trading_mode,
         },
       })
     }
@@ -520,5 +537,11 @@ export const toolDefinitions = [
     description:
       'Place a terminal market order. Personal: paper/live on your session (poll get_terminal_order). Leader: broadcast_mode=leader requires emitter_id from list_terminal_emitters (Traders category); fans out to followers — prefer paper. Requires write:terminal, feat:terminal; Idempotency-Key sent automatically.',
     inputSchema: zodMcpInputSchema(placeTerminalOrderInput),
+  },
+  {
+    name: 'cancel_terminal_order',
+    description:
+      'Cancel a resting personal terminal GTC limit. Pass client_order_id from place_terminal_order (hydrates exchange/symbol/trading_mode) or order_id plus exchange and symbol. Requires write:terminal; Idempotency-Key sent automatically.',
+    inputSchema: zodMcpInputSchema(cancelTerminalOrderInput),
   },
 ] as const

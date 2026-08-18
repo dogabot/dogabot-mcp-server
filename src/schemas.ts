@@ -209,6 +209,19 @@ export const placeTerminalOrderInput = z.object({
   idempotency_key: z.string().min(1).optional(),
 })
 
+export const cancelTerminalOrderInput = z
+  .object({
+    client_order_id: z.string().min(1).optional(),
+    order_id: z.string().min(1).optional(),
+    exchange: z.string().min(1).optional(),
+    symbol: z.string().min(1).optional(),
+    trading_mode: z.enum(['live', 'paper']).optional(),
+    idempotency_key: z.string().min(1).optional(),
+  })
+  .refine((d) => Boolean(d.client_order_id || d.order_id), {
+    message: 'client_order_id or order_id required',
+  })
+
 export type ReadToolName =
   | 'get_me'
   | 'list_automations'
@@ -235,7 +248,7 @@ export type ReadToolName =
   | 'list_exchange_balances'
   | 'get_terminal_symbol_rules'
 
-export type WriteToolName = 'place_terminal_order' | 'create_backtest' | 'cancel_backtest'
+export type WriteToolName = 'place_terminal_order' | 'cancel_terminal_order' | 'create_backtest' | 'cancel_backtest'
 
 export type ToolName = ReadToolName | WriteToolName
 
@@ -266,7 +279,12 @@ export const READ_TOOLS: ReadToolName[] = [
   'get_terminal_symbol_rules',
 ]
 
-export const WRITE_TOOLS: WriteToolName[] = ['place_terminal_order', 'create_backtest', 'cancel_backtest']
+export const WRITE_TOOLS: WriteToolName[] = [
+  'place_terminal_order',
+  'cancel_terminal_order',
+  'create_backtest',
+  'cancel_backtest',
+]
 
 /** Maps MCP tool names to REST endpoints. */
 export const toolRouteMap: Record<ToolName, { method: string; path: string; note?: string }> = {
@@ -324,5 +342,10 @@ export const toolRouteMap: Record<ToolName, { method: string; path: string; note
     method: 'POST',
     path: '/terminal/place-order',
     note: 'personal or leader; leader needs Traders emitter_id from list_terminal_emitters',
+  },
+  cancel_terminal_order: {
+    method: 'POST',
+    path: '/terminal/cancel-order',
+    note: 'requires write:terminal + Idempotency-Key; hydrates from client_order_id',
   },
 }

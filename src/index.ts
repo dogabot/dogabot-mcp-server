@@ -18,11 +18,11 @@ if (!apiKey) {
   process.exit(1)
 }
 
-// Legacy flag: other institutional writes remain REST-only; terminal place is always registered.
+// Legacy flag: other institutional writes remain REST-only; terminal place/cancel is always registered.
 const enableWriteTools = process.argv.includes('--enable-write-tools')
 if (enableWriteTools) {
   console.error(
-    'Note: --enable-write-tools is ignored. place_terminal_order is always available; other writes stay REST-only.',
+    'Note: --enable-write-tools is ignored. place_terminal_order and cancel_terminal_order are always available; other writes stay REST-only.',
   )
 }
 

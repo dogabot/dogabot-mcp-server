@@ -6,6 +6,30 @@ const ctx = {
   client: { request: vi.fn() } as unknown as DogabotClient,
 }
 
+describe('invokeWriteTool cancel_terminal_order', () => {
+  it('posts /terminal/cancel-order with Idempotency-Key', async () => {
+    const request = vi.fn().mockResolvedValue({ status: 'cancel_queued' })
+    const client = { request } as unknown as DogabotClient
+
+    await invokeWriteTool({ ...ctx, client }, 'cancel_terminal_order', {
+      client_order_id: 'dogabot-tcancel',
+      trading_mode: 'live',
+      idempotency_key: 'cancel-term-key',
+    })
+
+    expect(request).toHaveBeenCalledWith('POST', '/terminal/cancel-order', {
+      headers: { 'Idempotency-Key': 'cancel-term-key' },
+      body: {
+        client_order_id: 'dogabot-tcancel',
+        order_id: undefined,
+        exchange: undefined,
+        symbol: undefined,
+        trading_mode: 'live',
+      },
+    })
+  })
+})
+
 describe('invokeWriteTool create_backtest', () => {
   it('posts /backtest with Idempotency-Key', async () => {
     const request = vi.fn().mockResolvedValue({ job_id: 'abc' })
