@@ -5,7 +5,7 @@ MCP (Model Context Protocol) for [dogabot](https://dogabot.com). Prefer the **ho
 ## Prerequisites
 
 - **Pro or Institutional** dogabot account
-- API key from **Settings → API Keys** (`dbk_live_...`)
+- API key from **MCP & API** (`dbk_live_...`)
 - For the stdio package only: Node.js 20+
 
 ## Cursor (recommended) — remote URL
@@ -112,6 +112,10 @@ That registers the server with Claude Code (it launches `npx` for you). You stil
 | `list_terminal_orders` | Personal terminal order history |
 | `get_terminal_order` | Terminal order by `client_order_id` |
 | `list_terminal_positions` | Open terminal positions (default paper) |
+| `list_exchange_balances` | Live wallet for one exchange (not stored) |
+| `list_exchange_positions` | Live venue futures/perp contracts (spot ids empty; not stored) |
+| `list_exchange_orders` | Live venue open + recent filled/canceled (not stored) |
+| `list_exchange_trades` | Live venue fills; pass `cursor` from `next_cursor` for older pages |
 | `get_terminal_symbol_rules` | Lot / min-notional rules |
 
 **Write tools** (scoped API key + Idempotency-Key):

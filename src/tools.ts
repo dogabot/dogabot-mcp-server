@@ -20,6 +20,9 @@ import {
   listTerminalOrdersInput,
   listTerminalPositionsInput,
   listExchangeBalancesInput,
+  listExchangePositionsInput,
+  listExchangeOrdersInput,
+  listExchangeTradesInput,
   cancelBacktestInput,
   cancelTerminalOrderInput,
   createBacktestInput,
@@ -231,6 +234,35 @@ export async function invokeReadTool(ctx: ToolContext, name: ReadToolName, args:
           exchange: input.exchange,
           ...(input.include_zero ? { include_zero: '1' } : {}),
           ...(input.asset ? { asset: input.asset } : {}),
+        },
+      })
+    }
+    case 'list_exchange_positions': {
+      const input = listExchangePositionsInput.parse(args)
+      return client.request('GET', '/terminal/exchange-positions', {
+        query: {
+          exchange: input.exchange,
+          ...(input.symbol ? { symbol: input.symbol } : {}),
+        },
+      })
+    }
+    case 'list_exchange_orders': {
+      const input = listExchangeOrdersInput.parse(args)
+      return client.request('GET', '/terminal/exchange-orders', {
+        query: {
+          exchange: input.exchange,
+          ...(input.symbol ? { symbol: input.symbol } : {}),
+        },
+      })
+    }
+    case 'list_exchange_trades': {
+      const input = listExchangeTradesInput.parse(args)
+      return client.request('GET', '/terminal/exchange-trades', {
+        query: {
+          exchange: input.exchange,
+          ...(input.symbol ? { symbol: input.symbol } : {}),
+          ...(input.cursor ? { cursor: input.cursor } : {}),
+          ...(input.limit != null ? { limit: String(input.limit) } : {}),
         },
       })
     }
@@ -526,6 +558,24 @@ export const toolDefinitions = [
     description:
       'Live exchange wallet balances (free/locked) for one exchange — not stored in dogabot; not terminal session positions and not automation (bot/emitter) positions. Example: a running Bot BTC position on Binance will not appear here; Bitget USDT free balance will. Optional asset (e.g. USDT) returns only that row including zero. Requires live credentials and read:orders.',
     inputSchema: zodMcpInputSchema(listExchangeBalancesInput),
+  },
+  {
+    name: 'list_exchange_positions',
+    description:
+      'Live venue open futures/perp positions for one exchange — not stored in dogabot; not terminal session books and not automation positions. Spot product ids return an empty list. Optional symbol filter. Requires live credentials and read:orders.',
+    inputSchema: zodMcpInputSchema(listExchangePositionsInput),
+  },
+  {
+    name: 'list_exchange_orders',
+    description:
+      'Live venue open orders plus recent filled/canceled history for one exchange — not stored in dogabot; not terminal session or automation order history. Optional symbol filter (also used as a pair hint on Binance/Aster history). Requires live credentials and read:orders.',
+    inputSchema: zodMcpInputSchema(listExchangeOrdersInput),
+  },
+  {
+    name: 'list_exchange_trades',
+    description:
+      'Live venue trade/fill history for one exchange — not stored in dogabot; not order history and not terminal session trades. Paginated via cursor (omit for the newest page; pass next_cursor for older fills). Optional symbol filter; Binance/Aster require a pair. Optional limit 1–100 default 50. Requires live credentials and read:orders.',
+    inputSchema: zodMcpInputSchema(listExchangeTradesInput),
   },
   {
     name: 'get_terminal_symbol_rules',

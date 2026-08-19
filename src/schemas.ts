@@ -192,6 +192,23 @@ export const listExchangeBalancesInput = z.object({
   asset: z.string().min(1).optional(),
 })
 
+export const listExchangePositionsInput = z.object({
+  exchange: z.string().min(1),
+  symbol: z.string().min(1).optional(),
+})
+
+export const listExchangeOrdersInput = z.object({
+  exchange: z.string().min(1),
+  symbol: z.string().min(1).optional(),
+})
+
+export const listExchangeTradesInput = z.object({
+  exchange: z.string().min(1),
+  symbol: z.string().min(1).optional(),
+  cursor: z.string().min(1).optional(),
+  limit: z.number().int().min(1).max(100).optional(),
+})
+
 export const getTerminalSymbolRulesInput = z.object({
   exchange: z.string().min(1),
   symbol: z.string().min(1),
@@ -246,6 +263,9 @@ export type ReadToolName =
   | 'list_terminal_positions'
   | 'list_terminal_emitters'
   | 'list_exchange_balances'
+  | 'list_exchange_positions'
+  | 'list_exchange_orders'
+  | 'list_exchange_trades'
   | 'get_terminal_symbol_rules'
 
 export type WriteToolName = 'place_terminal_order' | 'cancel_terminal_order' | 'create_backtest' | 'cancel_backtest'
@@ -276,6 +296,9 @@ export const READ_TOOLS: ReadToolName[] = [
   'list_terminal_positions',
   'list_terminal_emitters',
   'list_exchange_balances',
+  'list_exchange_positions',
+  'list_exchange_orders',
+  'list_exchange_trades',
   'get_terminal_symbol_rules',
 ]
 
@@ -336,6 +359,21 @@ export const toolRouteMap: Record<ToolName, { method: string; path: string; note
     method: 'GET',
     path: '/terminal/exchange-balances',
     note: 'live venue wallet; not stored; optional asset filter; not terminal/automation positions',
+  },
+  list_exchange_positions: {
+    method: 'GET',
+    path: '/terminal/exchange-positions',
+    note: 'live venue futures/perp contracts; not stored; not terminal/automation books; spot ids empty',
+  },
+  list_exchange_orders: {
+    method: 'GET',
+    path: '/terminal/exchange-orders',
+    note: 'live venue open + recent filled/canceled; not stored; not terminal/automation order history; Binance/Aster history needs a pair',
+  },
+  list_exchange_trades: {
+    method: 'GET',
+    path: '/terminal/exchange-trades',
+    note: 'live venue fills; paginated cursor; Binance/Aster need a pair; not order history',
   },
   get_terminal_symbol_rules: { method: 'GET', path: '/terminal/symbol-rules' },
   place_terminal_order: {

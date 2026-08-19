@@ -120,6 +120,56 @@ describe('invokeReadTool list_exchange_balances', () => {
   })
 })
 
+describe('invokeReadTool list_exchange_positions', () => {
+  it('passes exchange and optional symbol', async () => {
+    const request = vi.fn().mockResolvedValue({ exchange: 'okx_futures', positions: [] })
+    const client = { request } as unknown as DogabotClient
+
+    await invokeReadTool({ ...ctx, client }, 'list_exchange_positions', {
+      exchange: 'okx_futures',
+      symbol: 'ETHUSDT',
+    })
+
+    expect(request).toHaveBeenCalledWith('GET', '/terminal/exchange-positions', {
+      query: { exchange: 'okx_futures', symbol: 'ETHUSDT' },
+    })
+  })
+})
+
+describe('invokeReadTool list_exchange_orders', () => {
+  it('passes exchange and optional symbol', async () => {
+    const request = vi.fn().mockResolvedValue({ exchange: 'okx_futures', orders: [] })
+    const client = { request } as unknown as DogabotClient
+
+    await invokeReadTool({ ...ctx, client }, 'list_exchange_orders', {
+      exchange: 'okx_futures',
+      symbol: 'ETHUSDT',
+    })
+
+    expect(request).toHaveBeenCalledWith('GET', '/terminal/exchange-orders', {
+      query: { exchange: 'okx_futures', symbol: 'ETHUSDT' },
+    })
+  })
+})
+
+describe('invokeReadTool list_exchange_trades', () => {
+  it('passes exchange, symbol, cursor, and limit', async () => {
+    const request = vi.fn().mockResolvedValue({ exchange: 'okx_futures', trades: [], next_cursor: 'after:b1' })
+    const client = { request } as unknown as DogabotClient
+
+    await invokeReadTool({ ...ctx, client }, 'list_exchange_trades', {
+      exchange: 'okx_futures',
+      symbol: 'ETHUSDT',
+      cursor: 'after:b0',
+      limit: 25,
+    })
+
+    expect(request).toHaveBeenCalledWith('GET', '/terminal/exchange-trades', {
+      query: { exchange: 'okx_futures', symbol: 'ETHUSDT', cursor: 'after:b0', limit: '25' },
+    })
+  })
+})
+
 describe('invokeReadTool get_candles', () => {
   it('calls datafeed/history with exchange, symbol, resolution, and countback', async () => {
     const request = vi.fn().mockResolvedValue({ s: 'ok', t: [1], o: [2], h: [3], l: [1], c: [2], v: [10] })
