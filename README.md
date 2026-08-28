@@ -85,7 +85,6 @@ That registers the server with Claude Code (it launches `npx` for you). You stil
 |----------|----------|---------|
 | `DOGABOT_API_KEY` | Yes | — |
 | `DOGABOT_MCP_URL` | No | `https://mcp.dogabot.com/mcp` |
-| `DOGABOT_MCP_EMBEDDED` | No | unset (proxy mode). Set `1` for legacy in-process REST bridge. |
 
 ## Tools (v1 — read only)
 
@@ -114,6 +113,7 @@ That registers the server with Claude Code (it launches `npx` for you). You stil
 | `list_terminal_positions` | Open terminal positions (default paper) |
 | `list_exchange_balances` | Live wallet for one exchange (not stored) |
 | `list_exchange_positions` | Live venue futures/perp contracts (spot ids empty; not stored) |
+| `get_exchange_margin_summary` | Live futures margin + liq distance aggregates (`aster_dex`, `binance_usdm`) |
 | `list_exchange_orders` | Live venue open + recent filled/canceled (not stored) |
 | `list_exchange_trades` | Live venue fills; pass `cursor` from `next_cursor` for older pages |
 | `get_terminal_symbol_rules` | Lot / min-notional rules |
@@ -124,6 +124,7 @@ That registers the server with Claude Code (it launches `npx` for you). You stil
 |------|--------|
 | `place_terminal_order` | Requires `write:terminal`; prefer paper |
 | `cancel_terminal_order` | Requires `write:terminal`; cancel resting GTC |
+| `create_ai_chat_conversation` / `ask_ai_chat` / `confirm_ai_chat_tool` | Requires `write:ask_ai` (Pro); sync Ask AI turn + approve writes |
 | `create_backtest` | Requires `write:backtest`; check quota; max 10 in-flight |
 | `cancel_backtest` | Requires `write:backtest` |
 
@@ -133,7 +134,7 @@ Every request requires a valid **scoped API key** — there is no anonymous acce
 
 - **Authentication required** — invalid or missing keys are rejected; failed attempts are rate-limited.
 - **Per-key rate limits** — Pro keys are capped (60 requests/minute per key); institutional keys have higher limits.
-- **Writes are scoped** — backtest writes need institutional `feat:api:write` + `write:backtest`; terminal place/cancel needs `write:terminal` + `feat:terminal`. Automation lifecycle start/stop remains REST-only.
+- **Writes are scoped** — backtest writes need institutional `feat:api:write` + `write:backtest`; terminal place/cancel needs `write:terminal` + `feat:terminal`; Ask AI needs `write:ask_ai` (Pro). Automation lifecycle start/stop remains REST-only.
 - **Scoped keys** — each key is limited to explicit permissions (account, automations, orders, markets, backtests, etc.).
 - **No exchange credentials** — API keys cannot access exchange API secrets; connect exchanges only in the webapp.
 - **Use a dedicated key** — create a separate key for MCP (e.g. “Cursor MCP”) and revoke it when you stop using it.

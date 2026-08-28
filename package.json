@@ -1,6 +1,6 @@
 {
   "name": "@dogabot/mcp",
-  "version": "0.2.14",
+  "version": "0.3.0",
   "description": "dogabot MCP stdio proxy to https://mcp.dogabot.com/mcp (API key auth)",
   "type": "module",
   "bin": {
@@ -19,9 +19,7 @@
     "test": "vitest run"
   },
   "dependencies": {
-    "@modelcontextprotocol/sdk": "^1.12.1",
-    "zod": "^3.24.2",
-    "zod-to-json-schema": "^3.24.5"
+    "@modelcontextprotocol/sdk": "^1.12.1"
   },
   "devDependencies": {
     "@types/node": "^22.13.10",
