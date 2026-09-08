@@ -37,7 +37,7 @@
     "type": "git",
     "url": "git+https://github.com/dogabot/dogabot-mcp-server.git"
   },
-  "homepage": "https://learn.dogabot.com/help/api-keys-and-mcp",
+  "homepage": "https://dogabot.com/mcp-server",
   "bugs": {
     "url": "https://github.com/dogabot/dogabot-mcp-server/issues"
   }
