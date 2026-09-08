@@ -2,7 +2,7 @@
   "name": "dogabot",
   "displayName": "dogabot",
   "description": "dogabot hosted MCP — automations, terminal, backtests, and Ask AI for Pro and Institutional",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "author": {
     "name": "dogabot",
     "url": "https://dogabot.com"
