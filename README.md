@@ -1,16 +1,45 @@
 # @dogabot/mcp
 
-MCP (Model Context Protocol) for [dogabot](https://dogabot.com). Prefer the **hosted** endpoint; this npm package is an optional stdio proxy for clients that cannot use a URL transport.
+Official [MCP](https://modelcontextprotocol.io) for [dogabot](https://dogabot.com) — research markets, manage automations, run backtests, and place terminal orders from Cursor, Claude, and other AI clients.
+
+**Product page:** [dogabot.com/mcp-server](https://dogabot.com/mcp-server)
+
+Prefer the **hosted** endpoint `https://mcp.dogabot.com/mcp`. This npm package is an optional **stdio proxy** for clients that cannot use a URL transport.
 
 ## Prerequisites
 
 - **Pro or Institutional** dogabot account
-- API key from **MCP & API** (`dbk_live_...`)
+- For **OAuth MCP** (Cursor Needs login): enable **OAuth MCP access** under dogabot **MCP & API**
+- For **API key** / stdio: API key from **MCP & API** (`dbk_live_...`)
 - For the stdio package only: Node.js 20+
 
-## Cursor (recommended) — remote URL
+## Features
 
-No Node process required. Create an API key, then:
+- **Hosted MCP** — connect with a URL; no Python/`uv` for Cursor
+- **OAuth in Cursor** — Needs login without pasting keys into config
+- **Automations** — list, create, start, stop, update, delete (scoped writes)
+- **Terminal & exchange** — paper/live place & cancel, balances, positions, orders, trades, income
+- **Backtests & markets** — enqueue/cancel backtests, candles, tickers, marketplace, correlation
+- **Ask AI** — same assistant as the webapp (`write:ask_ai`)
+- **Paper first** — prefer paper trading before enabling live write scopes
+
+## Cursor (recommended) — OAuth
+
+No API key in config. Enable OAuth MCP in dogabot **MCP & API**, then:
+
+```json
+{
+  "mcpServers": {
+    "dogabot": {
+      "url": "https://mcp.dogabot.com/mcp"
+    }
+  }
+}
+```
+
+Choose **Needs login** and approve dogabot. Do **not** paste a Clerk session JWT.
+
+## Cursor — remote URL with API key
 
 ```json
 {
@@ -25,19 +54,31 @@ No Node process required. Create an API key, then:
 }
 ```
 
-Use a **dogabot API key**, not a Clerk session JWT. Enable the server under **Settings → Tools & MCP**.
+Use a **dogabot API key**, not a Clerk session JWT.
+
+## VS Code
+
+Create `.vscode/mcp.json` (or user MCP settings) with a remote URL and Bearer header:
+
+```json
+{
+  "servers": {
+    "dogabot": {
+      "type": "http",
+      "url": "https://mcp.dogabot.com/mcp",
+      "headers": {
+        "Authorization": "Bearer dbk_live_REPLACE_ME"
+      }
+    }
+  }
+}
+```
 
 ## Stdio package (optional)
 
 Use `@dogabot/mcp` when your client only supports command/stdio MCP. By default it **proxies** to `https://mcp.dogabot.com/mcp` (override with `DOGABOT_MCP_URL`).
 
 **Do not run `npx -y @dogabot/mcp` in a terminal to “install”.** The AI app launches it for you.
-
-1. Copy [`examples/cursor-mcp.json`](examples/cursor-mcp.json) into `.cursor/mcp.json` (merge with existing `mcpServers` if needed).
-2. Replace `dbk_live_REPLACE_ME` with your API key.
-3. Reload Cursor and enable **dogabot**.
-
-Example:
 
 ```json
 {
@@ -55,19 +96,16 @@ Example:
 
 ### Troubleshooting (Cursor)
 
-- **Tools show up but every call times out** — Cursor sometimes keeps a stale “connected” session after sleep or a long day. Open **Settings → Tools & MCP**, turn **dogabot** off, wait a few seconds, turn it on again (or use **Developer: Reload Window**).
-- **`DOGABOT_API_KEY is required` in the MCP log** — the key is missing from the `env` block (or `envFile`). Fix the config and toggle the server again.
+- **Tools show up but every call times out** — toggle **dogabot** off/on under **Settings → Tools & MCP**, or **Developer: Reload Window**.
+- **`DOGABOT_API_KEY is required`** — key missing from the `env` block; fix config and toggle again.
 
 ## Claude Desktop
 
 Claude Desktop requires **strict JSON** (no comments, no `${env:…}` interpolation).
 
 1. Copy the `dogabot` block from [`examples/claude-desktop-config.json`](examples/claude-desktop-config.json).
-2. Paste into your Claude Desktop config:
-   - **macOS:** `~/Library/Application Support/Claude/claude_desktop_config.json`
-   - **Windows:** `%APPDATA%\Claude\claude_desktop_config.json`
-3. Replace `dbk_live_REPLACE_ME` with your API key.
-4. Restart Claude Desktop.
+2. Paste into Claude Desktop config (macOS: `~/Library/Application Support/Claude/claude_desktop_config.json`).
+3. Replace `dbk_live_REPLACE_ME` and restart Claude Desktop.
 
 ## Claude Code
 
@@ -77,71 +115,109 @@ claude mcp add dogabot \
   -- npx -y @dogabot/mcp
 ```
 
-That registers the server with Claude Code (it launches `npx` for you). You still should not run `npx -y @dogabot/mcp` yourself to “test install”.
-
 ## Environment variables
 
 | Variable | Required | Default |
 |----------|----------|---------|
-| `DOGABOT_API_KEY` | Yes | — |
+| `DOGABOT_API_KEY` | Yes (stdio / API-key modes) | — |
 | `DOGABOT_MCP_URL` | No | `https://mcp.dogabot.com/mcp` |
 
-## Tools (v1 — read only)
+## Example prompts
+
+1. Show my open paper terminal positions and buying power context.
+2. List my running automations sorted by daily PnL.
+3. Get the latest BTC ticker on Hyperliquid and 1h candles for the last day.
+4. Place a small paper market buy on Aster for BTC — confirm before live.
+5. Create a backtest for my strategy on ETH and tell me when quota is low.
+6. Ask AI to summarize my account risk and propose a paper order I must confirm.
+
+## Available tools
+
+Hosted MCP exposes **57 tools** (same catalog as the Go server). Writes need matching scopes on your API key or OAuth profile.
+
+### Account & portfolio
 
 | Tool | Description |
 |------|-------------|
-| `get_me` | Current user profile |
-| `list_automations` | Automations summary (sort/filter; optional `enabled_rule`) |
-| `get_automation` | Single automation detail (config) |
-| `get_pnl_series` | Daily PnL series (`period` 7d/30d/90d/all) |
+| `get_me` | Current user profile, plan tier, and limits |
+| `get_user_statistics` | Dashboard statistics and PnL history |
+| `get_positions` | Aggregated open positions |
 | `get_position` | Open position for one automation |
-| `get_user_statistics` | Account statistics (`trading_mode`, `automation_type`; use `terminal` for personal terminal-only) |
-| `get_positions` | Open positions (`trading_mode`, `automation_type`; use `terminal` for personal terminal sessions) |
-| `list_orders` | Order history (`follower_id` or `bot_id`) |
-| `list_signals` | Emitter signal history (`emitter_id`) |
-| `get_backtest_quota` | Backtest quota |
-| `list_backtests` | Backtest results (sort/filter; optional `enabled_rule`) |
-| `get_backtest` | Single backtest detail |
-| `get_backtest_signals` | Paginated backtest trades (+ 24h/keep-20 retention notice) |
-| `search_marketplace` | Marketplace search |
-| `list_markets` | Markets list |
-| `list_exchanges` | Exchanges list (default active only) |
-| `get_ticker` | Ticker snapshot |
-| `get_candles` | OHLCV history |
-| `list_terminal_orders` | Personal terminal order history |
-| `get_terminal_order` | Terminal order by `client_order_id` |
-| `list_terminal_positions` | Open terminal positions (default paper) |
-| `list_exchange_balances` | Live wallet for one exchange (not stored) |
-| `list_exchange_positions` | Live venue futures/perp contracts (spot ids empty; not stored) |
-| `get_exchange_margin_summary` | Live futures margin + liq distance aggregates (`aster_dex`, `binance_usdm`) |
-| `list_exchange_orders` | Live venue open + recent filled/canceled (not stored) |
-| `list_exchange_trades` | Live venue fills; pass `cursor` from `next_cursor` for older pages |
-| `get_terminal_symbol_rules` | Lot / min-notional rules |
+| `get_pnl_series` | Daily PnL series for an automation |
+| `list_orders` | Order history for a follower or bot |
+| `list_signals` | Latest signals for an emitter |
 
-**Write tools** (scoped API key + Idempotency-Key):
+### Automations
 
-| Tool | Notes |
-|------|--------|
-| `place_terminal_order` | Requires `write:terminal`; prefer paper |
-| `cancel_terminal_order` | Requires `write:terminal`; cancel resting GTC |
-| `create_ai_chat_conversation` / `ask_ai_chat` / `confirm_ai_chat_tool` | Requires `write:ask_ai` (Pro); sync Ask AI turn + approve writes |
-| `create_backtest` | Requires `write:backtest`; check quota; max 10 in-flight |
-| `cancel_backtest` | Requires `write:backtest` |
+| Tool | Description |
+|------|-------------|
+| `list_automations` | Automation summaries |
+| `get_automation` | Single automation by type and id |
+| `create_automation` | Create bot / follower / emitter / portfolio (`write:automation`) |
+| `start_automation` | Start an automation (`write:lifecycle`) |
+| `stop_automation` | Stop an automation (`write:lifecycle`) |
+| `update_automation` | Update a stopped automation (`write:automation`) |
+| `delete_automation` | Delete an automation (`write:automation`) |
+
+### Credentials & tags
+
+| Tool | Description |
+|------|-------------|
+| `list_credentials` | List exchange credentials (masked) |
+| `create_credential` / `update_credential` / `set_default_credential` / `delete_credential` | Credential writes (`write:credentials`) |
+| `list_tags` / `create_tag` / `update_tag` / `delete_tag` | Automation tags |
+
+### Terminal
+
+| Tool | Description |
+|------|-------------|
+| `list_terminal_orders` / `get_terminal_order` / `list_terminal_positions` | Terminal session reads |
+| `list_terminal_emitters` | Emitters eligible for Leader broadcast |
+| `get_terminal_symbol_rules` / `get_terminal_order_capabilities` | Venue rules and capabilities |
+| `place_terminal_order` / `cancel_terminal_order` | Place/cancel (`write:terminal`; prefer paper) |
+
+### Exchange (live venue)
+
+| Tool | Description |
+|------|-------------|
+| `list_exchange_balances` | Live wallet snapshot |
+| `list_exchange_positions` | Live futures/perp positions |
+| `get_exchange_margin_summary` | Futures margin summary |
+| `list_exchange_orders` / `list_exchange_trades` / `list_exchange_income` | Live venue history |
+| `cancel_exchange_order` / `cancel_exchange_orders` | Cancel venue orders (`write:terminal`) |
+
+### Backtests & markets
+
+| Tool | Description |
+|------|-------------|
+| `get_backtest_quota` / `list_backtests` / `get_backtest` / `get_backtest_signals` | Backtest reads |
+| `create_backtest` / `cancel_backtest` | Backtest writes (`write:backtest`) |
+| `search_marketplace` / `list_markets` / `list_exchanges` | Discovery |
+| `get_ticker` / `get_candles` / `get_symbol_correlation` | Market data |
+
+### Ask AI
+
+| Tool | Description |
+|------|-------------|
+| `create_ai_chat_conversation` / `ask_ai_chat` / `confirm_ai_chat_tool` | Chat + confirm writes (`write:ask_ai`) |
+| `get_ai_chat_conversation` / `list_ai_chat_conversations` / `get_ai_chat_quota` | History and quota |
+
+Full scope ↔ REST mapping: [docs.dogabot.com/mcp](https://docs.dogabot.com/mcp/).
 
 ## Security
 
-Every request requires a valid **scoped API key** — there is no anonymous access. dogabot enforces this on the server, not only in the MCP client.
+Every request requires a valid **OAuth grant** or **scoped API key** — there is no anonymous access.
 
-- **Authentication required** — invalid or missing keys are rejected; failed attempts are rate-limited.
-- **Per-key rate limits** — Pro keys are capped (60 requests/minute per key); institutional keys have higher limits.
-- **Writes are scoped** — backtest writes need institutional `feat:api:write` + `write:backtest`; terminal place/cancel needs `write:terminal` + `feat:terminal`; Ask AI needs `write:ask_ai` (Pro). Automation lifecycle start/stop remains REST-only.
-- **Scoped keys** — each key is limited to explicit permissions (account, automations, orders, markets, backtests, etc.).
-- **No exchange credentials** — API keys cannot access exchange API secrets; connect exchanges only in the webapp.
-- **Use a dedicated key** — create a separate key for MCP (e.g. “Cursor MCP”) and revoke it when you stop using it.
-- **Never commit keys** — keep `DOGABOT_API_KEY` out of git; prefer OS env / secret manager, or a private local `.cursor/mcp.json` that is not committed.
+- **Authentication required** — invalid or missing credentials are rejected; failed attempts are rate-limited.
+- **Per-key / per-user rate limits** — Pro is capped (e.g. 60 requests/minute per key); Institutional higher.
+- **Writes are scoped** — terminal needs `write:terminal` (+ `feat:terminal`); backtests need `write:backtest` (+ institutional `feat:api:write` when required); automation create/update/delete need `write:automation`; start/stop need `write:lifecycle`; Ask AI needs `write:ask_ai`; credentials need `write:credentials`.
+- **No exchange secrets over MCP reads** — credential secrets are write-only; connect exchanges in the webapp.
+- **Prefer paper** — review every write the model proposes before live.
+- **Never commit keys** — keep `DOGABOT_API_KEY` out of git.
 
-Institutional automation lifecycle mutations remain REST-only (with `Idempotency-Key`). MCP write surface: terminal place/cancel + create/cancel backtest as above.
 ## Related
 
+- [MCP product page](https://dogabot.com/mcp-server)
 - [API keys & MCP (Learn Center)](https://learn.dogabot.com/help/api-keys-and-mcp)
+- [MCP tool catalog](https://docs.dogabot.com/mcp/)
 - [GitHub repository](https://github.com/dogabot/dogabot-mcp-server)

@@ -1,13 +1,13 @@
 {
   "name": "dogabot",
   "displayName": "dogabot",
-  "description": "dogabot MCP server — read-only trading tools for Pro and Institutional API keys",
+  "description": "dogabot hosted MCP — automations, terminal, backtests, and Ask AI for Pro and Institutional",
   "version": "0.3.0",
   "author": {
     "name": "dogabot",
     "url": "https://dogabot.com"
   },
-  "homepage": "https://learn.dogabot.com/help/api-keys-and-mcp",
+  "homepage": "https://dogabot.com/mcp-server",
   "repository": "https://github.com/dogabot/dogabot-mcp-server",
   "license": "MIT",
   "keywords": [
