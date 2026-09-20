@@ -1,6 +1,7 @@
 {
   "mcpServers": {
     "dogabot": {
+      "type": "http",
       "url": "https://mcp.dogabot.com/mcp",
       "headers": {
         "Authorization": "Bearer dbk_live_REPLACE_ME"

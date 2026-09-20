@@ -6,6 +6,10 @@ Official [MCP](https://modelcontextprotocol.io) for [dogabot](https://dogabot.co
 
 Prefer the **hosted** endpoint `https://mcp.dogabot.com/mcp`. This npm package is an optional **stdio proxy** for clients that cannot use a URL transport.
 
+**Marketplace:** Cursor Marketplace and Grok Build packaging live in this repo (`.cursor-plugin/`, `mcp.json`, `.mcp.json`). Submit is a human step after sync — see dogabot monorepo `docs/ops/MCP_MARKETPLACE_SUBMISSION.md`. Claude curated directories are **not** submitted yet (policy backlog); use a custom connector URL or the stdio example below.
+
+**Privacy:** [dogabot.com/privacy](https://dogabot.com/privacy) · **Terms:** [dogabot.com/terms](https://dogabot.com/terms)
+
 ## Prerequisites
 
 - **Pro or Institutional** dogabot account
@@ -31,6 +35,7 @@ No API key in config. Enable OAuth MCP in dogabot **MCP & API**, then:
 {
   "mcpServers": {
     "dogabot": {
+      "type": "http",
       "url": "https://mcp.dogabot.com/mcp"
     }
   }
@@ -45,6 +50,7 @@ Choose **Needs login** and approve dogabot. Do **not** paste a Clerk session JWT
 {
   "mcpServers": {
     "dogabot": {
+      "type": "http",
       "url": "https://mcp.dogabot.com/mcp",
       "headers": {
         "Authorization": "Bearer dbk_live_REPLACE_ME"
@@ -130,10 +136,13 @@ claude mcp add dogabot \
 4. Place a small paper market buy on Aster for BTC — confirm before live.
 5. Create a backtest for my strategy on ETH and tell me when quota is low.
 6. Ask AI to summarize my account risk and propose a paper order I must confirm.
+7. Create a paper bot: BTC/USDT on Binance USD-M, 1h, long-only RSI(14) mean reversion with 4% stop loss and 8% take profit.
+8. Create a paper strategy on ETH 1h that trades both ways on MACD(12, 26, 9) histogram flips, then summarize the rules before I start it.
+9. Create a paper two-leg bot on Bybit for BTC+SOL: equal-notional legs, limit entries, scale-in on pullbacks, limit take profit, and market stop loss.
 
 ## Available tools
 
-Hosted MCP exposes **57 tools** (same catalog as the Go server). Writes need matching scopes on your API key or OAuth profile.
+Hosted MCP exposes **63 tools** (same catalog as the Go server). Writes need matching scopes on your API key or OAuth profile.
 
 ### Account & portfolio
 
@@ -158,6 +167,7 @@ Hosted MCP exposes **57 tools** (same catalog as the Go server). Writes need mat
 | `stop_automation` | Stop an automation (`write:lifecycle`) |
 | `update_automation` | Update a stopped automation (`write:automation`) |
 | `delete_automation` | Delete an automation (`write:automation`) |
+| `set_automation_book` | Set one bot/follower book leg (`write:lifecycle`; session/MCP OAuth only) |
 
 ### Credentials & tags
 
@@ -190,7 +200,7 @@ Hosted MCP exposes **57 tools** (same catalog as the Go server). Writes need mat
 
 | Tool | Description |
 |------|-------------|
-| `get_backtest_quota` / `list_backtests` / `get_backtest` / `get_backtest_signals` | Backtest reads |
+| `get_backtest_quota` / `list_backtests` / `get_backtest` / `summarize_backtest_batch` / `get_backtest_signals` | Backtest reads |
 | `create_backtest` / `cancel_backtest` | Backtest writes (`write:backtest`) |
 | `search_marketplace` / `list_markets` / `list_exchanges` | Discovery |
 | `get_ticker` / `get_candles` / `get_symbol_correlation` | Market data |

@@ -2,10 +2,9 @@
   "name": "dogabot",
   "displayName": "dogabot",
   "description": "dogabot hosted MCP — automations, terminal, backtests, and Ask AI for Pro and Institutional",
-  "version": "0.3.1",
+  "version": "0.3.2",
   "author": {
-    "name": "dogabot",
-    "url": "https://dogabot.com"
+    "name": "dogabot"
   },
   "homepage": "https://dogabot.com/mcp-server",
   "repository": "https://github.com/dogabot/dogabot-mcp-server",
@@ -18,6 +17,13 @@
     "backtest",
     "automation"
   ],
+  "category": "integrations",
+  "tags": [
+    "dogabot",
+    "trading",
+    "mcp",
+    "automation"
+  ],
   "logo": "assets/logo.png",
-  "mcpServers": "mcp.json"
+  "mcpServers": "./mcp.json"
 }
