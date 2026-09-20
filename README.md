@@ -6,7 +6,7 @@ Official [MCP](https://modelcontextprotocol.io) for [dogabot](https://dogabot.co
 
 Prefer the **hosted** endpoint `https://mcp.dogabot.com/mcp`. This npm package is an optional **stdio proxy** for clients that cannot use a URL transport.
 
-**Marketplace:** This repo ships Cursor (`.cursor-plugin/`, `mcp.json`) and Grok Build (`.mcp.json`, `.claude-plugin/`) packaging for the hosted endpoint. Listing is a separate human submit step — not automatic on sync. Claude curated directories are **not** listed yet; use a [custom connector](https://dogabot.com/mcp-server) URL (`https://mcp.dogabot.com/mcp`) or the Claude Desktop stdio example below.
+**Marketplace:** This repo includes Cursor (`.cursor-plugin/`, `mcp.json`) and Grok Build (`.mcp.json`, `.claude-plugin/`) packaging for the hosted endpoint. Until a marketplace listing is live, connect with the URL configs below. Claude curated directories are **not** listed yet — use a [custom connector](https://dogabot.com/mcp-server) URL (`https://mcp.dogabot.com/mcp`) or the Claude Desktop stdio example.
 
 **Privacy:** [dogabot.com/privacy](https://dogabot.com/privacy) · **Terms:** [dogabot.com/terms](https://dogabot.com/terms)
 
